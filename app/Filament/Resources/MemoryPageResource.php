@@ -231,7 +231,14 @@ class MemoryPageResource extends Resource
                     ->label('Gesperrt'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('view_public')
+                    ->label('Profil ansehen')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(fn (MemoryPage $record): ?string =>
+                        $record->qrCode ? url('/m/' . $record->qrCode->short_code) : null
+                    )
+                    ->openUrlInNewTab()
+                    ->hidden(fn (MemoryPage $record): bool => ! $record->qrCode),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([]);

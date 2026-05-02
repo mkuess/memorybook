@@ -340,6 +340,54 @@ class MemoryPageResourceTest extends TestCase
         $response->assertSee('Beitrag bearbeiten');
     }
 
+    // --- table action: Profil ansehen ---
+
+    public function test_table_action_profil_ansehen_links_to_public_url(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('/m/' . $page->qrCode->short_code, false);
+    }
+
+    public function test_table_action_profil_ansehen_opens_in_new_tab(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('target="_blank"', false);
+    }
+
+    public function test_table_action_hidden_when_no_qr_code(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+        $code  = $page->qrCode->short_code;
+
+        $page->qrCode()->delete();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertDontSee('/m/' . $code, false);
+    }
+
+    public function test_internal_view_route_still_accessible(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+    }
+
     // --- toggle lock action tests ---
 
     public function test_admin_can_block_memory_page_from_detail_view(): void
