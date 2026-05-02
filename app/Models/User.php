@@ -47,6 +47,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(MemoryPage::class);
     }
 
+    public function stories(): HasMany
+    {
+        return $this->hasMany(Story::class);
+    }
+
     protected function casts(): array
     {
         return [
