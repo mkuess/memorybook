@@ -25,10 +25,14 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <ul class="divide-y divide-gray-100">
                         @foreach ($memoryPages as $page)
-                            <li class="p-6">
+                            <li class="p-6 flex items-center justify-between">
                                 <a href="{{ route('memory-pages.edit', $page) }}"
                                    class="text-gray-900 hover:text-indigo-600 font-medium">
                                     {{ $page->person_name }}
+                                </a>
+                                <a href="{{ route('memory-pages.qr-code', $page) }}"
+                                   class="text-sm text-gray-500 hover:text-indigo-600">
+                                    QR-Code
                                 </a>
                             </li>
                         @endforeach

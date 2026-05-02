@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MemoryPageController;
+use App\Http\Controllers\MemoryPageQrController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMemoryPageController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/memory-pages/{memoryPage}', [MemoryPageController::class, 'update'])->name('memory-pages.update');
     Route::post('/memory-pages/{memoryPage}/publish', [MemoryPageController::class, 'publish'])->name('memory-pages.publish');
     Route::post('/memory-pages/{memoryPage}/unpublish', [MemoryPageController::class, 'unpublish'])->name('memory-pages.unpublish');
+    Route::get('/memory-pages/{memoryPage}/qr-code', [MemoryPageQrController::class, 'show'])->name('memory-pages.qr-code');
 });
 
 Route::middleware('auth')->group(function () {
