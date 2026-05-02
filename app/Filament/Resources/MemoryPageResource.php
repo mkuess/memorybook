@@ -77,11 +77,14 @@ class MemoryPageResource extends Resource
                     ])
                     ->required(),
 
-                Forms\Components\Toggle::make('is_published')
-                    ->label('Freigegeben'),
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\Toggle::make('is_published')
+                            ->label('Freigegeben'),
 
-                Forms\Components\Toggle::make('is_locked')
-                    ->label('Gesperrt'),
+                        Forms\Components\Toggle::make('is_locked')
+                            ->label('Gesperrt'),
+                    ]),
 
             ]);
     }
