@@ -243,4 +243,119 @@ class PublicMemoryPageLayoutTest extends TestCase
         $response->assertDontSee('Maria Muster');
         $response->assertDontSee("memory-pages/{$page->id}/gallery/gallery0.jpg", false);
     }
+
+    // --- share button ---
+
+    public function test_public_page_shows_profil_teilen_button(): void
+    {
+        $page = $this->makeVisiblePage();
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee('Profil teilen');
+    }
+
+    public function test_share_button_appears_after_person_name_and_before_short_bio(): void
+    {
+        $page = $this->makeVisiblePage(['short_bio' => 'Kurzbiografie hier.']);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $content   = $response->getContent();
+        $namePos   = strpos($content, 'Maria Muster');
+        $sharePos  = strpos($content, 'Profil teilen');
+        $bioPos    = strpos($content, 'Kurzbiografie hier.');
+
+        $this->assertLessThan($sharePos, $namePos,  'Person name must appear before share button');
+        $this->assertLessThan($bioPos,   $sharePos, 'Share button must appear before short_bio');
+    }
+
+    public function test_public_page_includes_share_javascript(): void
+    {
+        $page = $this->makeVisiblePage();
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee('shareProfile', false);
+        $response->assertSee('navigator.share', false);
+        $response->assertSee('In die Zwischenablage kopiert.', false);
+    }
+
+    public function test_private_page_does_not_show_profil_teilen_button(): void
+    {
+        $page = $this->makeVisiblePage(['visibility' => 'private']);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee(self::UNAVAILABLE);
+        $response->assertDontSee('Profil teilen');
+    }
+
+    public function test_unpublished_page_does_not_show_profil_teilen_button(): void
+    {
+        $page = $this->makeVisiblePage(['is_published' => false]);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee(self::UNAVAILABLE);
+        $response->assertDontSee('Profil teilen');
+    }
+
+    public function test_locked_page_does_not_show_profil_teilen_button(): void
+    {
+        $page = $this->makeVisiblePage(['is_locked' => true]);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee(self::UNAVAILABLE);
+        $response->assertDontSee('Profil teilen');
+    }
+
+    public function test_public_page_still_shows_profile_photo_short_bio_gallery_and_stories(): void
+    {
+        Storage::fake('public');
+        $page = $this->makeVisiblePage(['short_bio' => 'Biografie Text.']);
+
+        Media::create([
+            'memory_page_id'    => $page->id,
+            'collection'        => 'profile',
+            'filename'          => 'photo.jpg',
+            'original_filename' => 'photo.jpg',
+            'path'              => "memory-pages/{$page->id}/profile/photo.jpg",
+            'mime_type'         => 'image/jpeg',
+            'size_bytes'        => 5000,
+            'sort_order'        => 0,
+        ]);
+
+        $this->addGalleryImage($page, 0);
+
+        $page->stories()->create([
+            'user_id'      => $page->user_id,
+            'title'        => 'Eine Geschichte',
+            'content'      => 'Geschichte Inhalt.',
+            'is_published' => true,
+        ]);
+
+        $code     = $page->qrCode->short_code;
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee('Maria Muster');
+        $response->assertSee('Biografie Text.');
+        $response->assertSee("memory-pages/{$page->id}/gallery/gallery0.jpg", false);
+        $response->assertSee('Eine Geschichte');
+        $response->assertSee('Profil teilen');
+    }
 }

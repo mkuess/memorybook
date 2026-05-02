@@ -6,7 +6,7 @@
     <title>{{ $page->person_name }} – Erinnerungsseite</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-[#F8F5ED] text-gray-900 antialiased">
 
     <div class="min-h-screen py-10 px-4 sm:py-16">
         <div class="w-full max-w-xl mx-auto">
@@ -22,12 +22,12 @@
                     </div>
                 @endif
 
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 text-center">
+                <h1 class="text-2xl sm:text-3xl font-bold text-brand-900 mb-1 text-center">
                     {{ $page->person_name }}
                 </h1>
 
                 @if ($page->birth_date || $page->death_date)
-                    <p class="text-gray-500 text-sm text-center">
+                    <p class="text-gray-500 text-sm text-center mb-0">
                         @if ($page->birth_date)
                             {{ $page->birth_date->format('d.m.Y') }}
                         @endif
@@ -40,8 +40,17 @@
                     </p>
                 @endif
 
+                {{-- Share button — directly below date section --}}
+                <div class="mt-5 flex flex-col items-center gap-2">
+                    <button onclick="shareProfile()"
+                            class="inline-flex items-center px-5 py-2 bg-brand-700 text-white text-sm font-medium rounded hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
+                        Profil teilen
+                    </button>
+                    <p id="share-msg" class="text-xs text-gray-500 min-h-[1rem]"></p>
+                </div>
+
                 @if ($page->short_bio)
-                    <div class="mt-6 text-gray-700 leading-relaxed text-sm sm:text-base text-left">
+                    <div class="mt-6 pt-5 border-t border-gray-100 text-gray-700 leading-relaxed text-sm sm:text-base text-left">
                         {{ $page->short_bio }}
                     </div>
                 @endif
@@ -68,7 +77,7 @@
                 <div class="mt-5 space-y-4">
                     @foreach ($stories as $story)
                         <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8">
-                            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
+                            <h2 class="text-lg sm:text-xl font-semibold text-brand-900 mb-3">
                                 {{ $story->title }}
                             </h2>
                             <div class="text-gray-700 leading-relaxed text-sm sm:text-base">
@@ -81,6 +90,25 @@
 
         </div>
     </div>
+
+    <script>
+    function shareProfile() {
+        var url  = window.location.href;
+        var title = '{{ addslashes($page->person_name) }} – Erinnerungsseite';
+        var msg  = document.getElementById('share-msg');
+        if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function () {});
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(function () {
+                msg.textContent = 'In die Zwischenablage kopiert.';
+            }).catch(function () {
+                msg.textContent = 'Link konnte nicht automatisch kopiert werden.';
+            });
+        } else {
+            msg.textContent = 'Link konnte nicht automatisch kopiert werden.';
+        }
+    }
+    </script>
 
 </body>
 </html>
