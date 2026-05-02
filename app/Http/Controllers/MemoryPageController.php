@@ -37,7 +37,9 @@ class MemoryPageController extends Controller
     {
         Gate::allowIf(auth()->id() === $memoryPage->user_id);
 
-        return view('memory-pages.edit', compact('memoryPage'));
+        $profilePhoto = $memoryPage->media()->where('collection', 'profile')->first();
+
+        return view('memory-pages.edit', compact('memoryPage', 'profilePhoto'));
     }
 
     public function update(Request $request, MemoryPage $memoryPage): RedirectResponse

@@ -82,6 +82,14 @@ class MemoryPageResource extends Resource
 
                 Forms\Components\Toggle::make('is_locked')
                     ->label('Gesperrt'),
+
+                Forms\Components\View::make('filament.profile-photo-form')
+                    ->viewData(fn ($record): array => [
+                        'memoryPage'   => $record,
+                        'profilePhoto' => $record?->media()->where('collection', 'profile')->first(),
+                    ])
+                    ->visibleOn('edit')
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -89,6 +97,15 @@ class MemoryPageResource extends Resource
     {
         return $infolist
             ->schema([
+                Infolists\Components\ImageEntry::make('profile_photo')
+                    ->label('Profilfoto')
+                    ->state(fn (MemoryPage $record): ?string =>
+                        $record->media()->where('collection', 'profile')->first()?->path
+                    )
+                    ->disk('public')
+                    ->height(80)
+                    ->width(80),
+
                 Infolists\Components\TextEntry::make('person_name')
                     ->label('Person'),
 

@@ -13,6 +13,14 @@
 
             <div class="bg-white rounded-lg shadow-sm p-8">
 
+                @if ($profilePhoto)
+                    <div class="flex justify-center mb-6">
+                        <img src="{{ Storage::disk('public')->url($profilePhoto->path) }}"
+                             alt="{{ $page->person_name }}"
+                             class="w-32 h-32 object-cover rounded-full shadow">
+                    </div>
+                @endif
+
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">
                     {{ $page->person_name }}
                 </h1>
