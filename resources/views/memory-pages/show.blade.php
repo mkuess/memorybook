@@ -47,6 +47,20 @@
 
             </div>
 
+            @if ($galleryImages->isNotEmpty())
+                <div class="mt-8">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        @foreach ($galleryImages as $image)
+                            <div class="aspect-square overflow-hidden rounded-lg shadow-sm">
+                                <img src="{{ Storage::disk('public')->url($image->path) }}"
+                                     alt="{{ $image->original_filename }}"
+                                     class="w-full h-full object-cover">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             @if ($stories->isNotEmpty())
                 <div class="mt-8 space-y-6">
                     @foreach ($stories as $story)

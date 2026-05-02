@@ -29,9 +29,14 @@ class PublicMemoryPageController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        $profilePhoto = $page->media()->where('collection', 'profile')->first();
+        $profilePhoto  = $page->media()->where('collection', 'profile')->first();
+        $galleryImages = $page->media()
+            ->where('collection', 'gallery')
+            ->orderBy('sort_order')
+            ->orderBy('created_at')
+            ->get();
 
-        return view('memory-pages.show', compact('page', 'stories', 'profilePhoto'));
+        return view('memory-pages.show', compact('page', 'stories', 'profilePhoto', 'galleryImages'));
     }
 
     private function isVisible($page): bool

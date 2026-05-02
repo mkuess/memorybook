@@ -158,6 +158,54 @@
                 </div>
             </div>
 
+            {{-- Gallery --}}
+            <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-base font-semibold text-gray-800 mb-4">Galerie</h3>
+
+                    @if ($galleryImages->isNotEmpty())
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            @foreach ($galleryImages as $image)
+                                <div class="aspect-square overflow-hidden rounded-md shadow-sm">
+                                    <img src="{{ Storage::disk('public')->url($image->path) }}"
+                                         alt="{{ $image->original_filename }}"
+                                         class="w-full h-full object-cover">
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-500 mb-4">Noch keine Galeriebilder hochgeladen.</p>
+                    @endif
+
+                    @if (session('gallery_success'))
+                        <p class="text-sm text-green-700 mb-3">{{ session('gallery_success') }}</p>
+                    @endif
+
+                    @if ($galleryImages->count() >= 5)
+                        <p class="text-sm text-amber-700">Maximal 5 Galeriebilder möglich.</p>
+                    @else
+                        <form method="POST"
+                              action="{{ route('memory-pages.gallery.store', $memoryPage) }}"
+                              enctype="multipart/form-data">
+                            @csrf
+                            <div class="flex flex-wrap items-center gap-3">
+                                <input type="file"
+                                       name="image"
+                                       accept="image/jpeg,image/jpg,image/png,image/webp"
+                                       class="text-sm text-gray-600">
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Bild hochladen
+                                </button>
+                            </div>
+                            @error('image')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </form>
+                    @endif
+                </div>
+            </div>
+
             <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 flex items-center justify-between">
                     <div>
