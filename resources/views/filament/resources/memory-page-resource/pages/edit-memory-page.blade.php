@@ -58,6 +58,86 @@
         </form>
     </x-filament::section>
 
+    {{-- Gallery management — outside the Livewire form to avoid nested forms --}}
+    @php
+        $galleryImages = $record->media()
+            ->where('collection', 'gallery')
+            ->orderBy('sort_order')
+            ->orderBy('created_at')
+            ->get();
+    @endphp
+    <x-filament::section>
+        <x-slot name="heading">Galerie</x-slot>
+
+        @if (session('gallery_success'))
+            <p class="text-sm text-green-700 mb-3">{{ session('gallery_success') }}</p>
+        @endif
+
+        @if ($galleryImages->isNotEmpty())
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                @foreach ($galleryImages as $image)
+                    <div class="relative group">
+                        <img
+                            src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->path) }}"
+                            alt="{{ $image->original_filename }}"
+                            class="w-full aspect-square object-cover rounded-md shadow-sm"
+                        >
+                        <form
+                            method="POST"
+                            action="{{ route('memory-pages.admin-gallery.destroy', [$record, $image]) }}"
+                            class="absolute top-1 right-1"
+                            onsubmit="return confirm('Bild wirklich löschen?')"
+                        >
+                            @csrf
+                            @method('DELETE')
+                            <button
+                                type="submit"
+                                class="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded shadow"
+                                title="Bild entfernen"
+                            >
+                                &times;
+                            </button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-sm text-gray-500 mb-3">Noch keine Galeriebilder vorhanden.</p>
+        @endif
+
+        @if ($galleryImages->count() >= 5)
+            <p class="text-sm text-amber-700">Maximal 5 Galeriebilder möglich.</p>
+        @else
+            <form
+                method="POST"
+                action="{{ route('memory-pages.admin-gallery.store', $record) }}"
+                enctype="multipart/form-data"
+                class="space-y-3"
+            >
+                @csrf
+                <div class="flex flex-wrap items-center gap-3">
+                    <input
+                        type="file"
+                        name="image"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        class="text-sm text-gray-600"
+                    >
+                    <button
+                        type="submit"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-sm font-semibold text-white hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        style="border-radius:4px"
+                    >
+                        Bild hochladen
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400">Erlaubt: JPG, PNG oder WebP bis 5 MB. Maximal 5 Bilder.</p>
+                @error('image')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </form>
+        @endif
+    </x-filament::section>
+
     @capture($form)
         <x-filament-panels::form
             id="form"

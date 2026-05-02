@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminGalleryController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\MemoryPageController;
 use App\Http\Controllers\MemoryPageQrController;
@@ -31,6 +32,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/memory-pages/{memoryPage}/profile-photo/upload', [ProfilePhotoController::class, 'create'])->name('memory-pages.profile-photo.create');
     Route::post('/memory-pages/{memoryPage}/profile-photo', [ProfilePhotoController::class, 'store'])->name('memory-pages.profile-photo.store');
     Route::post('/memory-pages/{memoryPage}/gallery', [GalleryController::class, 'store'])->name('memory-pages.gallery.store');
+    Route::post('/memory-pages/{memoryPage}/admin-gallery', [AdminGalleryController::class, 'store'])->name('memory-pages.admin-gallery.store');
+    Route::delete('/memory-pages/{memoryPage}/admin-gallery/{media}', [AdminGalleryController::class, 'destroy'])->name('memory-pages.admin-gallery.destroy');
 
     Route::get('/memory-pages/{memoryPage}/stories', [StoryController::class, 'index'])->name('memory-pages.stories.index');
     Route::get('/memory-pages/{memoryPage}/stories/create', [StoryController::class, 'create'])->name('memory-pages.stories.create');
