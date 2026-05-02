@@ -3,11 +3,14 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MemoryPageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicMemoryPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/m/{slug}', [PublicMemoryPageController::class, 'show'])->name('memory-pages.public');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
