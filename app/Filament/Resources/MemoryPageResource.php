@@ -12,8 +12,6 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\HtmlString;
 
 class MemoryPageResource extends Resource
 {
@@ -33,43 +31,6 @@ class MemoryPageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Profilfoto')
-                    ->schema([
-                        Forms\Components\Placeholder::make('profile_photo_preview')
-                            ->label('')
-                            ->content(function (?MemoryPage $record): HtmlString {
-                                if (! $record) {
-                                    return new HtmlString('<p class="text-sm text-gray-500 dark:text-gray-400">Noch kein Profilfoto hochgeladen.</p>');
-                                }
-                                $photo = $record->media()->where('collection', 'profile')->first();
-                                if (! $photo) {
-                                    return new HtmlString('<p class="text-sm text-gray-500 dark:text-gray-400">Noch kein Profilfoto hochgeladen.</p>');
-                                }
-                                $url = e(Storage::disk('public')->url($photo->path));
-                                return new HtmlString("<img src=\"{$url}\" alt=\"Profilfoto\" style=\"width:80px;height:80px;object-fit:cover;border-radius:9999px;\">");
-                            }),
-
-                        Forms\Components\Placeholder::make('profile_photo_upload_button')
-                            ->label('')
-                            ->content(function (?MemoryPage $record): HtmlString {
-                                if (! $record) {
-                                    return new HtmlString('');
-                                }
-
-                                $url  = e(route('memory-pages.profile-photo.create', $record) . '?from=admin');
-                                $icon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 shrink-0" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" /></svg>';
-
-                                return new HtmlString(
-                                    '<a href="' . $url . '" class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">'
-                                    . $icon
-                                    . '<span>Profilfoto hochladen</span>'
-                                    . '</a>'
-                                );
-                            }),
-                    ])
-                    ->hiddenOn('create')
-                    ->columnSpanFull(),
-
                 Forms\Components\Select::make('user_id')
                     ->label('Inhaber')
                     ->searchable()

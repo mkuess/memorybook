@@ -288,7 +288,7 @@ class ProfilePhotoTest extends TestCase
         $response->assertSee('Profilfoto hochladen');
     }
 
-    public function test_filament_edit_page_upload_button_links_to_upload_page(): void
+    public function test_filament_edit_page_has_inline_photo_upload_form(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'user']);
@@ -297,7 +297,9 @@ class ProfilePhotoTest extends TestCase
         $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
 
         $response->assertOk();
-        $response->assertSee(route('memory-pages.profile-photo.create', $page), false);
+        $response->assertSee('enctype="multipart/form-data"', false);
+        $response->assertSee('name="photo"', false);
+        $response->assertSee(route('memory-pages.profile-photo.store', $page), false);
     }
 
     // --- public page test ---
