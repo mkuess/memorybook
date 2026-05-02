@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\MemoryPageResource\Pages\CreateMemoryPage;
 use App\Filament\Resources\MemoryPageResource\Pages\EditMemoryPage;
+use App\Filament\Resources\MemoryPageResource\Pages\ViewMemoryPage;
 use App\Models\MemoryPage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -195,5 +196,71 @@ class MemoryPageResourceTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Noch kein QR-Code vorhanden');
+    }
+
+    public function test_detail_view_renders_public_url_as_link(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee(
+            'href="' . url('/m/' . $page->qrCode->short_code) . '"',
+            false
+        );
+    }
+
+    public function test_detail_view_public_url_opens_in_new_tab(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('target="_blank"', false);
+    }
+
+    // --- toggle lock action tests ---
+
+    public function test_admin_can_block_memory_page_from_detail_view(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertFalse($page->is_locked);
+
+        Livewire::actingAs($admin)
+            ->test(ViewMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callAction('toggle_lock');
+
+        $this->assertTrue($page->fresh()->is_locked);
+    }
+
+    public function test_admin_can_unblock_memory_page_from_detail_view(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['is_locked' => true]);
+        $this->assertTrue($page->fresh()->is_locked);
+
+        Livewire::actingAs($admin)
+            ->test(ViewMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callAction('toggle_lock');
+
+        $this->assertFalse($page->fresh()->is_locked);
+    }
+
+    public function test_normal_user_cannot_access_detail_view_actions(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $page = $this->makeMemoryPage();
+
+        $response = $this->actingAs($user)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertForbidden();
     }
 }

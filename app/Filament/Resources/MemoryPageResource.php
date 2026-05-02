@@ -121,7 +121,13 @@ class MemoryPageResource extends Resource
                         $record->qrCode
                             ? '/m/' . $record->qrCode->short_code
                             : 'Noch kein QR-Code vorhanden'
-                    ),
+                    )
+                    ->url(fn (MemoryPage $record): ?string =>
+                        $record->qrCode
+                            ? url('/m/' . $record->qrCode->short_code)
+                            : null
+                    )
+                    ->openUrlInNewTab(),
 
                 Infolists\Components\TextEntry::make('visibility')
                     ->label('Sichtbarkeit')
