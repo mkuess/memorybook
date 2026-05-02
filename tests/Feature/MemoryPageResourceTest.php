@@ -277,6 +277,56 @@ class MemoryPageResourceTest extends TestCase
         $response->assertSee('Jetzt freigeben');
     }
 
+    // --- lock button positioning tests ---
+
+    public function test_lock_button_appears_after_gesperrt_not_under_freigegeben_for_unlocked_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertFalse($page->is_locked);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        // "Jetzt blockieren" must come after both "Freigegeben" and "Gesperrt"
+        // proving it is in the Gesperrt section, not between Freigegeben and Gesperrt
+        $response->assertSeeInOrder(['Freigegeben', 'Gesperrt', 'Jetzt blockieren']);
+    }
+
+    public function test_lock_button_appears_after_gesperrt_not_under_freigegeben_for_locked_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['is_locked' => true]);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        // "Jetzt freigeben" must come after both "Freigegeben" and "Gesperrt"
+        $response->assertSeeInOrder(['Freigegeben', 'Gesperrt', 'Jetzt freigeben']);
+    }
+
+    public function test_lock_button_is_not_rendered_between_freigegeben_and_gesperrt(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+
+        $html      = $response->getContent();
+        $posFreig  = strpos($html, 'Freigegeben');
+        $posGesper = strpos($html, 'Gesperrt');
+        $posButton = strpos($html, 'Jetzt blockieren');
+
+        // The button must appear after "Gesperrt", not between "Freigegeben" and "Gesperrt"
+        $this->assertGreaterThan($posFreig, $posGesper, '"Gesperrt" should appear after "Freigegeben"');
+        $this->assertGreaterThan($posGesper, $posButton, '"Jetzt blockieren" should appear after "Gesperrt"');
+    }
+
     // --- header edit action tests ---
 
     public function test_detail_view_header_shows_beitrag_bearbeiten(): void
