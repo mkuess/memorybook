@@ -136,10 +136,24 @@ class MemoryPageResource extends Resource
                     ->boolean()
                     ->helperText('Freigegeben bedeutet: Die Seite darf öffentlich angezeigt werden, wenn die Sichtbarkeit dies erlaubt.'),
 
-                Infolists\Components\IconEntry::make('is_locked')
+                Infolists\Components\TextEntry::make('is_locked')
                     ->label('Gesperrt')
-                    ->boolean()
+                    ->state(fn (MemoryPage $record): string => $record->is_locked ? 'Gesperrt' : 'Nicht gesperrt')
+                    ->badge()
+                    ->color(fn (MemoryPage $record): string => $record->is_locked ? 'danger' : 'success')
                     ->helperText('Gesperrt bedeutet: Die Seite ist durch die Verwaltung blockiert und öffentlich nicht sichtbar.'),
+
+                Infolists\Components\Actions::make([
+                    Infolists\Components\Actions\Action::make('toggle_lock')
+                        ->label(fn (MemoryPage $record): string => $record->is_locked ? 'Jetzt freigeben' : 'Jetzt blockieren')
+                        ->color(fn (MemoryPage $record): string => $record->is_locked ? 'success' : 'danger')
+                        ->icon(fn (MemoryPage $record): string => $record->is_locked
+                            ? 'heroicon-o-lock-open'
+                            : 'heroicon-o-lock-closed')
+                        ->action(function (MemoryPage $record): void {
+                            $record->update(['is_locked' => ! $record->is_locked]);
+                        }),
+                ]),
 
                 Infolists\Components\TextEntry::make('birth_date')
                     ->label('Geburtsdatum')

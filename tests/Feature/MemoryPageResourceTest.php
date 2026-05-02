@@ -223,6 +223,73 @@ class MemoryPageResourceTest extends TestCase
         $response->assertSee('target="_blank"', false);
     }
 
+    // --- locked status display tests ---
+
+    public function test_detail_view_shows_nicht_gesperrt_for_unlocked_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertFalse($page->is_locked);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Nicht gesperrt');
+    }
+
+    public function test_detail_view_shows_gesperrt_for_locked_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['is_locked' => true]);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Gesperrt');
+    }
+
+    public function test_detail_view_shows_jetzt_blockieren_for_unlocked_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertFalse($page->is_locked);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Jetzt blockieren');
+    }
+
+    public function test_detail_view_shows_jetzt_freigeben_for_locked_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['is_locked' => true]);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Jetzt freigeben');
+    }
+
+    // --- header edit action tests ---
+
+    public function test_detail_view_header_shows_beitrag_bearbeiten(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Beitrag bearbeiten');
+    }
+
     // --- toggle lock action tests ---
 
     public function test_admin_can_block_memory_page_from_detail_view(): void
@@ -234,7 +301,7 @@ class MemoryPageResourceTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(ViewMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callAction('toggle_lock');
+            ->callInfolistAction('.toggle_lockAction', 'toggle_lock');
 
         $this->assertTrue($page->fresh()->is_locked);
     }
@@ -249,7 +316,7 @@ class MemoryPageResourceTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(ViewMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callAction('toggle_lock');
+            ->callInfolistAction('.toggle_lockAction', 'toggle_lock');
 
         $this->assertFalse($page->fresh()->is_locked);
     }

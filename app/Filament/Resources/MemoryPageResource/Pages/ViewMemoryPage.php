@@ -56,18 +56,10 @@ class ViewMemoryPage extends ViewRecord
                     ]);
                 }),
 
-            Action::make('toggle_lock')
-                ->label(fn (): string => $this->record->is_locked ? 'Jetzt freigeben' : 'Jetzt blockieren')
-                ->color(fn (): string => $this->record->is_locked ? 'success' : 'danger')
-                ->icon(fn (): string => $this->record->is_locked
-                    ? 'heroicon-o-lock-open'
-                    : 'heroicon-o-lock-closed')
-                ->action(function (): void {
-                    $this->record->update(['is_locked' => ! $this->record->is_locked]);
-                    $this->redirect(
-                        $this->getResource()::getUrl('view', ['record' => $this->record])
-                    );
-                }),
+            Action::make('edit')
+                ->label('Beitrag bearbeiten')
+                ->icon('heroicon-o-pencil-square')
+                ->url(fn (): string => $this->getResource()::getUrl('edit', ['record' => $this->record])),
         ];
     }
 }
