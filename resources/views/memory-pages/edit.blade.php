@@ -63,7 +63,7 @@
                             @enderror
                         </div>
 
-                        <div class="mb-6">
+                        <div class="mb-5">
                             <label for="short_bio" class="block text-sm font-medium text-gray-700 mb-1">
                                 Kurze Biografie
                             </label>
@@ -74,6 +74,29 @@
                                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 @error('short_bio') border-red-500 @enderror"
                             >{{ old('short_bio', $memoryPage->short_bio) }}</textarea>
                             @error('short_bio')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Sichtbarkeit
+                            </label>
+                            <div class="space-y-2">
+                                @foreach (['private' => 'Privat', 'link' => 'Nur per Link', 'public' => 'Öffentlich'] as $value => $label)
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="visibility"
+                                            value="{{ $value }}"
+                                            {{ old('visibility', $memoryPage->visibility) === $value ? 'checked' : '' }}
+                                            class="text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                        >
+                                        <span class="text-sm text-gray-700">{{ $label }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('visibility')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

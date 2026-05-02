@@ -49,6 +49,7 @@ class MemoryPageController extends Controller
             'birth_date'  => ['nullable', 'date'],
             'death_date'  => ['nullable', 'date'],
             'short_bio'   => ['nullable', 'string'],
+            'visibility'  => ['required', 'string', 'in:private,link,public'],
         ]);
 
         $memoryPage->update($validated);

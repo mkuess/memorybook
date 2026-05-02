@@ -52,6 +52,7 @@ class MemoryPageEditTest extends TestCase
             'person_name' => 'Erika Musterfrau',
             'birth_date'  => '1950-03-15',
             'short_bio'   => 'Eine kurze Biografie.',
+            'visibility'  => 'private',
         ]);
 
         $response->assertRedirect(route('dashboard'));
@@ -69,6 +70,7 @@ class MemoryPageEditTest extends TestCase
 
         $this->actingAs($user)->put(route('memory-pages.update', $page), [
             'person_name' => 'Erika Musterfrau',
+            'visibility'  => 'private',
             'slug'        => 'hackedsl',
         ]);
 
