@@ -7,9 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class ProfilePhotoController extends Controller
 {
+    public function create(Request $request, MemoryPage $memoryPage): View
+    {
+        Gate::allowIf(
+            $request->user()->id === $memoryPage->user_id
+            || $request->user()->isAdmin()
+        );
+
+        $from         = $request->query('from', 'customer');
+        $profilePhoto = $memoryPage->media()->where('collection', 'profile')->first();
+
+        return view('memory-pages.profile-photo-upload', [
+            'memoryPage'   => $memoryPage,
+            'from'         => $from,
+            'profilePhoto' => $profilePhoto,
+        ]);
+    }
+
     public function store(Request $request, MemoryPage $memoryPage): RedirectResponse
     {
         Gate::allowIf(
@@ -27,17 +45,14 @@ class ProfilePhotoController extends Controller
         $filename  = uniqid('', true) . '.' . $extension;
         $path      = "{$directory}/{$filename}";
 
-        // Remove old profile photo
         $existing = $memoryPage->media()->where('collection', 'profile')->first();
         if ($existing) {
             Storage::disk('public')->delete($existing->path);
             $existing->delete();
         }
 
-        // Store new file
         Storage::disk('public')->putFileAs($directory, $file, $filename);
 
-        // Image dimensions (best-effort)
         [$width, $height] = @getimagesize($file->getPathname()) ?: [null, null];
 
         $memoryPage->media()->create([
@@ -51,6 +66,11 @@ class ProfilePhotoController extends Controller
             'height'            => $height ?: null,
             'sort_order'        => 0,
         ]);
+
+        if ($request->input('from') === 'admin') {
+            return redirect("/admin/memory-pages/{$memoryPage->id}/edit")
+                ->with('success', 'Profilfoto gespeichert.');
+        }
 
         return back()->with('success', 'Profilfoto gespeichert.');
     }

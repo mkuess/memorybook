@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\MemoryPageResource\Pages\EditMemoryPage;
 use App\Models\MemoryPage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProfilePhotoTest extends TestCase
@@ -24,12 +22,6 @@ class ProfilePhotoTest extends TestCase
             'slug'        => substr(md5(uniqid()), 0, 8),
             'person_name' => 'Test Person',
         ]);
-    }
-
-    private function storeFakeJpeg(string $path): void
-    {
-        $file = UploadedFile::fake()->image('photo.jpg', 100, 100);
-        Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
     }
 
     // --- customer route tests ---
@@ -142,52 +134,170 @@ class ProfilePhotoTest extends TestCase
         $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
     }
 
-    // --- Filament action tests ---
+    // --- upload page (GET) tests ---
 
-    public function test_admin_can_upload_profile_photo_through_filament_action(): void
+    public function test_admin_can_access_profile_photo_upload_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($admin)
+            ->get(route('memory-pages.profile-photo.create', $page));
+
+        $response->assertOk();
+        $response->assertSee('Profilfoto hochladen');
+    }
+
+    public function test_owner_can_access_profile_photo_upload_page(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($owner)
+            ->get(route('memory-pages.profile-photo.create', $page));
+
+        $response->assertOk();
+    }
+
+    public function test_non_owner_cannot_access_profile_photo_upload_page(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $other = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($other)
+            ->get(route('memory-pages.profile-photo.create', $page));
+
+        $response->assertForbidden();
+    }
+
+    public function test_upload_page_has_correct_form_attributes(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($admin)
+            ->get(route('memory-pages.profile-photo.create', $page) . '?from=admin');
+
+        $response->assertOk();
+        $response->assertSee('method="POST"', false);
+        $response->assertSee('enctype="multipart/form-data"', false);
+        $response->assertSee('name="photo"', false);
+    }
+
+    public function test_upload_page_shows_no_photo_text_when_none_exists(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($admin)
+            ->get(route('memory-pages.profile-photo.create', $page));
+
+        $response->assertOk();
+        $response->assertSee('Noch kein Profilfoto hochgeladen.');
+    }
+
+    // --- admin upload (POST) tests ---
+
+    public function test_admin_can_upload_profile_photo_via_admin_route(): void
     {
         Storage::fake('public');
 
         $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'user']);
         $page  = $this->makeMemoryPage($owner);
+        $file  = UploadedFile::fake()->image('photo.jpg', 200, 200);
 
-        $path = "memory-pages/{$page->id}/profile/test.jpg";
-        $this->storeFakeJpeg($path);
-
-        Livewire::actingAs($admin)
-            ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callFormComponentAction('upload_profile_photoAction', 'upload_profile_photo', data: ['photo' => [$path]]);
+        $this->actingAs($admin)
+            ->post(route('memory-pages.profile-photo.store', $page), [
+                'photo' => $file,
+                'from'  => 'admin',
+            ]);
 
         $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
     }
 
-    public function test_replacing_profile_photo_via_filament_action_keeps_only_one_record(): void
+    public function test_admin_upload_redirects_to_filament_edit_page(): void
     {
         Storage::fake('public');
 
         $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'user']);
         $page  = $this->makeMemoryPage($owner);
+        $file  = UploadedFile::fake()->image('photo.jpg', 200, 200);
 
-        $dir   = "memory-pages/{$page->id}/profile";
-        $path1 = "{$dir}/first.jpg";
-        $path2 = "{$dir}/second.jpg";
-        $this->storeFakeJpeg($path1);
-        $this->storeFakeJpeg($path2);
+        $response = $this->actingAs($admin)
+            ->post(route('memory-pages.profile-photo.store', $page), [
+                'photo' => $file,
+                'from'  => 'admin',
+            ]);
 
-        Livewire::actingAs($admin)
-            ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callFormComponentAction('upload_profile_photoAction', 'upload_profile_photo', data: ['photo' => [$path1]]);
+        $response->assertRedirect("/admin/memory-pages/{$page->id}/edit");
+    }
 
-        // Restore path2 in case the action moved/deleted anything
-        $this->storeFakeJpeg($path2);
+    public function test_customer_upload_without_from_redirects_back(): void
+    {
+        Storage::fake('public');
 
-        Livewire::actingAs($admin)
-            ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callFormComponentAction('upload_profile_photoAction', 'upload_profile_photo', data: ['photo' => [$path2]]);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+        $file  = UploadedFile::fake()->image('photo.jpg', 200, 200);
+
+        $response = $this->actingAs($owner)
+            ->from(route('memory-pages.profile-photo.create', $page))
+            ->post(route('memory-pages.profile-photo.store', $page), [
+                'photo' => $file,
+            ]);
+
+        $response->assertRedirect(route('memory-pages.profile-photo.create', $page));
+    }
+
+    public function test_replacing_profile_photo_via_admin_route_keeps_only_one_record(): void
+    {
+        Storage::fake('public');
+
+        $admin  = User::factory()->create(['role' => 'admin']);
+        $owner  = User::factory()->create(['role' => 'user']);
+        $page   = $this->makeMemoryPage($owner);
+        $first  = UploadedFile::fake()->image('first.jpg', 100, 100);
+        $second = UploadedFile::fake()->image('second.jpg', 100, 100);
+
+        $this->actingAs($admin)
+            ->post(route('memory-pages.profile-photo.store', $page), ['photo' => $first, 'from' => 'admin']);
+
+        $this->actingAs($admin)
+            ->post(route('memory-pages.profile-photo.store', $page), ['photo' => $second, 'from' => 'admin']);
 
         $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
+    }
+
+    // --- Filament edit page integration ---
+
+    public function test_filament_edit_page_shows_profilfoto_hochladen_button(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
+        $response->assertSee('Profilfoto hochladen');
+    }
+
+    public function test_filament_edit_page_upload_button_links_to_upload_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
+        $response->assertSee(route('memory-pages.profile-photo.create', $page), false);
     }
 
     // --- public page test ---
