@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MemoryPage extends Model
@@ -57,5 +58,10 @@ class MemoryPage extends Model
     public function media(): HasMany
     {
         return $this->hasMany(Media::class);
+    }
+
+    public function qrCode(): HasOne
+    {
+        return $this->hasOne(QrCode::class);
     }
 }
