@@ -18,6 +18,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/memory-pages', [MemoryPageController::class, 'store'])->name('memory-pages.store');
     Route::get('/memory-pages/{memoryPage}/edit', [MemoryPageController::class, 'edit'])->name('memory-pages.edit');
     Route::put('/memory-pages/{memoryPage}', [MemoryPageController::class, 'update'])->name('memory-pages.update');
+    Route::post('/memory-pages/{memoryPage}/publish', [MemoryPageController::class, 'publish'])->name('memory-pages.publish');
+    Route::post('/memory-pages/{memoryPage}/unpublish', [MemoryPageController::class, 'unpublish'])->name('memory-pages.unpublish');
 });
 
 Route::middleware('auth')->group(function () {
