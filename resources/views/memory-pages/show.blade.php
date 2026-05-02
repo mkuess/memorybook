@@ -8,25 +8,26 @@
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
 
-    <div class="min-h-screen flex items-start justify-center py-16 px-4">
-        <div class="w-full max-w-2xl">
+    <div class="min-h-screen py-10 px-4 sm:py-16">
+        <div class="w-full max-w-xl mx-auto">
 
-            <div class="bg-white rounded-lg shadow-sm p-8">
+            {{-- Profile header --}}
+            <div class="bg-white rounded-xl shadow-sm p-6 sm:p-10">
 
                 @if ($profilePhoto)
-                    <div class="flex justify-center mb-6">
+                    <div class="flex justify-center mb-5">
                         <img src="{{ Storage::disk('public')->url($profilePhoto->path) }}"
                              alt="{{ $page->person_name }}"
-                             class="w-32 h-32 object-cover rounded-full shadow">
+                             class="w-28 h-28 sm:w-36 sm:h-36 object-cover rounded-full shadow">
                     </div>
                 @endif
 
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 text-center">
                     {{ $page->person_name }}
                 </h1>
 
                 @if ($page->birth_date || $page->death_date)
-                    <p class="text-gray-500 text-sm mb-6">
+                    <p class="text-gray-500 text-sm text-center">
                         @if ($page->birth_date)
                             {{ $page->birth_date->format('d.m.Y') }}
                         @endif
@@ -40,18 +41,19 @@
                 @endif
 
                 @if ($page->short_bio)
-                    <div class="prose prose-gray max-w-none mt-4">
-                        <p>{{ $page->short_bio }}</p>
+                    <div class="mt-6 text-gray-700 leading-relaxed text-sm sm:text-base text-left">
+                        {{ $page->short_bio }}
                     </div>
                 @endif
 
             </div>
 
+            {{-- Gallery: no heading, just the images --}}
             @if ($galleryImages->isNotEmpty())
-                <div class="mt-8">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div class="mt-5">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         @foreach ($galleryImages as $image)
-                            <div class="aspect-square overflow-hidden rounded-lg shadow-sm">
+                            <div class="aspect-square overflow-hidden rounded-lg">
                                 <img src="{{ Storage::disk('public')->url($image->path) }}"
                                      alt="{{ $image->original_filename }}"
                                      class="w-full h-full object-cover">
@@ -61,15 +63,16 @@
                 </div>
             @endif
 
+            {{-- Stories --}}
             @if ($stories->isNotEmpty())
-                <div class="mt-8 space-y-6">
+                <div class="mt-5 space-y-4">
                     @foreach ($stories as $story)
-                        <div class="bg-white rounded-lg shadow-sm p-8">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-3">
+                        <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8">
+                            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
                                 {{ $story->title }}
                             </h2>
-                            <div class="prose prose-gray max-w-none">
-                                <p>{{ $story->content }}</p>
+                            <div class="text-gray-700 leading-relaxed text-sm sm:text-base">
+                                {{ $story->content }}
                             </div>
                         </div>
                     @endforeach
