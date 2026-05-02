@@ -25,7 +25,7 @@ class MemoryPageResourceTest extends TestCase
         ]);
     }
 
-    // --- existing list/view/edit tests ---
+    // --- list / access tests ---
 
     public function test_admin_can_access_memory_page_list(): void
     {
@@ -169,5 +169,31 @@ class MemoryPageResourceTest extends TestCase
         $response = $this->actingAs($user)->get('/admin/memory-pages/create');
 
         $response->assertForbidden();
+    }
+
+    // --- detail view tests ---
+
+    public function test_detail_view_shows_public_url_when_qr_code_exists(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('/m/' . $page->qrCode->short_code);
+    }
+
+    public function test_detail_view_shows_fallback_text_when_qr_code_is_missing(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->qrCode()->delete();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Noch kein QR-Code vorhanden');
     }
 }

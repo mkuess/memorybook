@@ -78,7 +78,7 @@ class MemoryPageResource extends Resource
                     ->required(),
 
                 Forms\Components\Toggle::make('is_published')
-                    ->label('Veröffentlicht'),
+                    ->label('Freigegeben'),
 
                 Forms\Components\Toggle::make('is_locked')
                     ->label('Gesperrt'),
@@ -98,6 +98,14 @@ class MemoryPageResource extends Resource
                 Infolists\Components\TextEntry::make('slug')
                     ->label('Slug'),
 
+                Infolists\Components\TextEntry::make('public_url')
+                    ->label('Öffentliche URL')
+                    ->state(fn (MemoryPage $record): string =>
+                        $record->qrCode
+                            ? '/m/' . $record->qrCode->short_code
+                            : 'Noch kein QR-Code vorhanden'
+                    ),
+
                 Infolists\Components\TextEntry::make('visibility')
                     ->label('Sichtbarkeit')
                     ->badge()
@@ -108,12 +116,14 @@ class MemoryPageResource extends Resource
                     }),
 
                 Infolists\Components\IconEntry::make('is_published')
-                    ->label('Veröffentlicht')
-                    ->boolean(),
+                    ->label('Freigegeben')
+                    ->boolean()
+                    ->helperText('Freigegeben bedeutet: Die Seite darf öffentlich angezeigt werden, wenn die Sichtbarkeit dies erlaubt.'),
 
                 Infolists\Components\IconEntry::make('is_locked')
                     ->label('Gesperrt')
-                    ->boolean(),
+                    ->boolean()
+                    ->helperText('Gesperrt bedeutet: Die Seite ist durch die Verwaltung blockiert und öffentlich nicht sichtbar.'),
 
                 Infolists\Components\TextEntry::make('birth_date')
                     ->label('Geburtsdatum')
@@ -160,7 +170,7 @@ class MemoryPageResource extends Resource
                     }),
 
                 Tables\Columns\IconColumn::make('is_published')
-                    ->label('Veröffentlicht')
+                    ->label('Freigegeben')
                     ->boolean(),
 
                 Tables\Columns\IconColumn::make('is_locked')
@@ -183,7 +193,7 @@ class MemoryPageResource extends Resource
                     ]),
 
                 Tables\Filters\TernaryFilter::make('is_published')
-                    ->label('Veröffentlicht'),
+                    ->label('Freigegeben'),
 
                 Tables\Filters\TernaryFilter::make('is_locked')
                     ->label('Gesperrt'),
