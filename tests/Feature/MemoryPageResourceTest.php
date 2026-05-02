@@ -264,7 +264,7 @@ class MemoryPageResourceTest extends TestCase
         $response->assertSee('Jetzt blockieren');
     }
 
-    public function test_detail_view_shows_jetzt_freigeben_for_locked_page(): void
+    public function test_detail_view_shows_sperre_aufheben_for_locked_page(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $page  = $this->makeMemoryPage();
@@ -274,7 +274,7 @@ class MemoryPageResourceTest extends TestCase
         $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
 
         $response->assertOk();
-        $response->assertSee('Jetzt freigeben');
+        $response->assertSee('Sperre aufheben');
     }
 
     // --- lock button positioning tests ---
@@ -304,8 +304,8 @@ class MemoryPageResourceTest extends TestCase
         $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
 
         $response->assertOk();
-        // "Jetzt freigeben" must come after both "Freigegeben" and "Gesperrt"
-        $response->assertSeeInOrder(['Freigegeben', 'Gesperrt', 'Jetzt freigeben']);
+        // "Sperre aufheben" must come after both "Freigegeben" and "Gesperrt"
+        $response->assertSeeInOrder(['Freigegeben', 'Gesperrt', 'Sperre aufheben']);
     }
 
     public function test_lock_button_is_not_rendered_between_freigegeben_and_gesperrt(): void
@@ -338,6 +338,63 @@ class MemoryPageResourceTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Beitrag bearbeiten');
+    }
+
+    // --- publish toggle tests ---
+
+    public function test_detail_view_shows_jetzt_freigeben_for_unpublished_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertFalse($page->is_published);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Jetzt freigeben');
+    }
+
+    public function test_detail_view_shows_nicht_mehr_freigeben_for_published_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['is_published' => true]);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('Nicht mehr freigeben');
+    }
+
+    public function test_admin_can_publish_from_detail_view(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertFalse($page->is_published);
+
+        Livewire::actingAs($admin)
+            ->test(ViewMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callInfolistAction('.toggle_publishAction', 'toggle_publish');
+
+        $this->assertTrue($page->fresh()->is_published);
+    }
+
+    public function test_admin_can_unpublish_from_detail_view(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['is_published' => true]);
+        $this->assertTrue($page->fresh()->is_published);
+
+        Livewire::actingAs($admin)
+            ->test(ViewMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callInfolistAction('.toggle_publishAction', 'toggle_publish');
+
+        $this->assertFalse($page->fresh()->is_published);
     }
 
     // --- table action: Profil ansehen ---

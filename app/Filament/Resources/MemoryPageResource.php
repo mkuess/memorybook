@@ -134,10 +134,24 @@ class MemoryPageResource extends Resource
                         default   => 'gray',
                     }),
 
-                Infolists\Components\IconEntry::make('is_published')
-                    ->label('Freigegeben')
-                    ->boolean()
-                    ->helperText('Freigegeben bedeutet: Die Seite darf öffentlich angezeigt werden, wenn die Sichtbarkeit dies erlaubt.'),
+                Infolists\Components\Group::make([
+                    Infolists\Components\IconEntry::make('is_published')
+                        ->label('Freigegeben')
+                        ->boolean()
+                        ->helperText('Freigegeben bedeutet: Die Seite darf öffentlich angezeigt werden, wenn die Sichtbarkeit dies erlaubt.'),
+
+                    Infolists\Components\Actions::make([
+                        Infolists\Components\Actions\Action::make('toggle_publish')
+                            ->label(fn (MemoryPage $record): string => $record->is_published ? 'Nicht mehr freigeben' : 'Jetzt freigeben')
+                            ->color(fn (MemoryPage $record): string => $record->is_published ? 'warning' : 'success')
+                            ->icon(fn (MemoryPage $record): string => $record->is_published
+                                ? 'heroicon-o-eye-slash'
+                                : 'heroicon-o-eye')
+                            ->action(function (MemoryPage $record): void {
+                                $record->update(['is_published' => ! $record->is_published]);
+                            }),
+                    ]),
+                ]),
 
                 Infolists\Components\Group::make([
                     Infolists\Components\TextEntry::make('is_locked')
@@ -149,7 +163,7 @@ class MemoryPageResource extends Resource
 
                     Infolists\Components\Actions::make([
                         Infolists\Components\Actions\Action::make('toggle_lock')
-                            ->label(fn (MemoryPage $record): string => $record->is_locked ? 'Jetzt freigeben' : 'Jetzt blockieren')
+                            ->label(fn (MemoryPage $record): string => $record->is_locked ? 'Sperre aufheben' : 'Jetzt blockieren')
                             ->color(fn (MemoryPage $record): string => $record->is_locked ? 'success' : 'danger')
                             ->icon(fn (MemoryPage $record): string => $record->is_locked
                                 ? 'heroicon-o-lock-open'
