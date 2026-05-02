@@ -117,6 +117,21 @@
             </div>
 
             <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800">Erinnerungen</h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                            {{ $memoryPage->stories()->count() }} Erinnerung(en) vorhanden
+                        </p>
+                    </div>
+                    <a href="{{ route('memory-pages.stories.index', $memoryPage) }}"
+                       class="text-sm text-indigo-600 hover:text-indigo-800">
+                        Verwalten &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-base font-semibold text-gray-800 mb-4">Veröffentlichung</h3>
 

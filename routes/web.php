@@ -5,6 +5,7 @@ use App\Http\Controllers\MemoryPageController;
 use App\Http\Controllers\MemoryPageQrController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMemoryPageController;
+use App\Http\Controllers\StoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,6 +26,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/memory-pages/{memoryPage}/publish', [MemoryPageController::class, 'publish'])->name('memory-pages.publish');
     Route::post('/memory-pages/{memoryPage}/unpublish', [MemoryPageController::class, 'unpublish'])->name('memory-pages.unpublish');
     Route::get('/memory-pages/{memoryPage}/qr-code', [MemoryPageQrController::class, 'show'])->name('memory-pages.qr-code');
+
+    Route::get('/memory-pages/{memoryPage}/stories', [StoryController::class, 'index'])->name('memory-pages.stories.index');
+    Route::get('/memory-pages/{memoryPage}/stories/create', [StoryController::class, 'create'])->name('memory-pages.stories.create');
+    Route::post('/memory-pages/{memoryPage}/stories', [StoryController::class, 'store'])->name('memory-pages.stories.store');
 });
 
 Route::middleware('auth')->group(function () {
