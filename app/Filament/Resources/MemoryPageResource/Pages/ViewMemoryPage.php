@@ -27,6 +27,11 @@ class ViewMemoryPage extends ViewRecord
                 ->label('Beitrag bearbeiten')
                 ->icon('heroicon-o-pencil-square')
                 ->url(fn (): string => $this->getResource()::getUrl('edit', ['record' => $this->record])),
+
+            Action::make('manage_stories')
+                ->label('Stories verwalten')
+                ->icon('heroicon-o-book-open')
+                ->url(fn (): string => $this->getResource()::getUrl('stories', ['record' => $this->record])),
         ];
     }
 }

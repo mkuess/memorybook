@@ -1,0 +1,67 @@
+Update the public memory page layout for mobile-first profile presentation and gallery display.
+
+Requirements:
+- update the public /m/{code} memory page view
+- keep route behavior unchanged
+- keep availability rules unchanged:
+  - only show if is_published true
+  - is_locked false
+  - visibility link or public
+- mobile-first layout
+- desktop should still look clean and centered with a readable max width
+
+Public page layout:
+1. Profile header:
+   - profile photo centered if present
+   - person_name centered below the photo
+   - birth_date and death_date centered below the name if present
+   - date format should be German-friendly if already available, otherwise keep current format for now
+
+2. Short biography:
+   - show short_bio below the header
+   - keep text left-aligned for readability
+   - use comfortable line height
+   - do not center long text
+
+3. Gallery:
+   - show gallery images below the short biography
+   - use media records where collection = gallery
+   - max 5 images expected
+   - mobile:
+     - simple single-column or clean 2-column grid depending on image size
+   - desktop:
+     - clean responsive grid
+   - images should be visually consistent:
+     - object-cover
+     - modest border radius
+     - no heavy effects
+   - if no gallery images exist, show nothing; do not show an empty gallery heading
+
+4. Stories:
+   - keep published stories below the gallery
+   - keep existing rule:
+     - only stories where is_published true
+   - keep ordering by sort_order then created_at
+
+Design:
+- calm, respectful, minimal
+- no marketing language
+- avoid oversized desktop layout
+- buttons are not needed on the public page for this step
+- do not add JavaScript gallery/lightbox yet
+- do not add captions yet
+- do not change admin/customer edit pages in this step unless required to pass data
+
+Tests:
+- update/add tests proving:
+  - public page centers profile photo, name, and dates structurally/classes where practical
+  - short_bio is rendered
+  - gallery images are shown on public page
+  - no gallery section heading is shown when there are no gallery images
+  - published stories still render below gallery
+  - unavailable/private/unpublished/locked pages still do not reveal profile data, gallery, or stories
+
+Run:
+- php artisan test
+- npm run build if CSS/classes changed
+- show changed files and test/build results

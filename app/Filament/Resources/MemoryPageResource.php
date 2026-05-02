@@ -264,10 +264,11 @@ class MemoryPageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMemoryPages::route('/'),
-            'create' => Pages\CreateMemoryPage::route('/create'),
-            'view'   => Pages\ViewMemoryPage::route('/{record}'),
-            'edit'   => Pages\EditMemoryPage::route('/{record}/edit'),
+            'index'   => Pages\ListMemoryPages::route('/'),
+            'create'  => Pages\CreateMemoryPage::route('/create'),
+            'view'    => Pages\ViewMemoryPage::route('/{record}'),
+            'edit'    => Pages\EditMemoryPage::route('/{record}/edit'),
+            'stories' => Pages\ManageMemoryPageStories::route('/{record}/stories'),
         ];
     }
 }
