@@ -28,9 +28,9 @@ class MemoryPageController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['slug']    = $this->generateUniqueSlug();
 
-        MemoryPage::create($validated);
+        $memoryPage = MemoryPage::create($validated);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('memory-pages.edit', $memoryPage);
     }
 
     public function edit(MemoryPage $memoryPage): View

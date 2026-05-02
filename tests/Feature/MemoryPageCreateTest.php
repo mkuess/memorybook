@@ -36,8 +36,35 @@ class MemoryPageCreateTest extends TestCase
             'person_name' => 'Max Mustermann',
         ]);
 
-        $response->assertRedirect(route('dashboard'));
         $this->assertDatabaseHas('memory_pages', ['person_name' => 'Max Mustermann']);
+
+        $page = \App\Models\MemoryPage::where('person_name', 'Max Mustermann')->firstOrFail();
+        $response->assertRedirect(route('memory-pages.edit', $page));
+    }
+
+    public function test_creating_a_memory_page_redirects_to_the_edit_page(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('memory-pages.store'), [
+            'person_name' => 'Neue Person',
+        ]);
+
+        $page = \App\Models\MemoryPage::where('person_name', 'Neue Person')->firstOrFail();
+        $response->assertRedirect(route('memory-pages.edit', $page));
+    }
+
+    public function test_qr_code_record_is_created_with_the_memory_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('memory-pages.store'), [
+            'person_name' => 'QR Person',
+        ]);
+
+        $page = \App\Models\MemoryPage::where('person_name', 'QR Person')->firstOrFail();
+        $this->assertNotNull($page->qrCode);
+        $this->assertNotEmpty($page->qrCode->short_code);
     }
 
     public function test_created_page_belongs_to_the_logged_in_user(): void
