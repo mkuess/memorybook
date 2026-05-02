@@ -83,13 +83,6 @@ class MemoryPageResource extends Resource
                 Forms\Components\Toggle::make('is_locked')
                     ->label('Gesperrt'),
 
-                Forms\Components\View::make('filament.profile-photo-form')
-                    ->viewData(fn ($record): array => [
-                        'memoryPage'   => $record,
-                        'profilePhoto' => $record?->media()->where('collection', 'profile')->first(),
-                    ])
-                    ->visibleOn('edit')
-                    ->columnSpanFull(),
             ]);
     }
 

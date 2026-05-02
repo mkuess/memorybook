@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\MemoryPageResource\Pages\EditMemoryPage;
 use App\Models\MemoryPage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProfilePhotoTest extends TestCase
@@ -23,6 +25,14 @@ class ProfilePhotoTest extends TestCase
             'person_name' => 'Test Person',
         ]);
     }
+
+    private function storeFakeJpeg(string $path): void
+    {
+        $file = UploadedFile::fake()->image('photo.jpg', 100, 100);
+        Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+    }
+
+    // --- customer route tests ---
 
     public function test_owner_can_upload_profile_photo(): void
     {
@@ -49,10 +59,10 @@ class ProfilePhotoTest extends TestCase
     {
         Storage::fake('public');
 
-        $owner   = User::factory()->create(['role' => 'user']);
-        $other   = User::factory()->create(['role' => 'user']);
-        $page    = $this->makeMemoryPage($owner);
-        $file    = UploadedFile::fake()->image('photo.jpg', 200, 200);
+        $owner = User::factory()->create(['role' => 'user']);
+        $other = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+        $file  = UploadedFile::fake()->image('photo.jpg', 200, 200);
 
         $response = $this->actingAs($other)
             ->post(route('memory-pages.profile-photo.store', $page), [
@@ -63,16 +73,15 @@ class ProfilePhotoTest extends TestCase
         $this->assertCount(0, $page->fresh()->media()->where('collection', 'profile')->get());
     }
 
-    public function test_admin_can_upload_profile_photo_in_filament(): void
+    public function test_customer_profile_photo_upload_still_works(): void
     {
         Storage::fake('public');
 
-        $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'user']);
         $page  = $this->makeMemoryPage($owner);
-        $file  = UploadedFile::fake()->image('admin_photo.jpg', 100, 100);
+        $file  = UploadedFile::fake()->image('customer.jpg', 150, 150);
 
-        $response = $this->actingAs($admin)
+        $response = $this->actingAs($owner)
             ->post(route('memory-pages.profile-photo.store', $page), [
                 'photo' => $file,
             ]);
@@ -130,9 +139,58 @@ class ProfilePhotoTest extends TestCase
         $this->actingAs($owner)
             ->post(route('memory-pages.profile-photo.store', $page), ['photo' => $second]);
 
-        $profileMedia = $page->fresh()->media()->where('collection', 'profile')->get();
-        $this->assertCount(1, $profileMedia);
+        $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
     }
+
+    // --- Filament action tests ---
+
+    public function test_admin_can_upload_profile_photo_through_filament_action(): void
+    {
+        Storage::fake('public');
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $path = "memory-pages/{$page->id}/profile/test.jpg";
+        $this->storeFakeJpeg($path);
+
+        Livewire::actingAs($admin)
+            ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callAction('upload_profile_photo', data: ['photo' => [$path]]);
+
+        $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
+    }
+
+    public function test_replacing_profile_photo_via_filament_action_keeps_only_one_record(): void
+    {
+        Storage::fake('public');
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $dir   = "memory-pages/{$page->id}/profile";
+        $path1 = "{$dir}/first.jpg";
+        $path2 = "{$dir}/second.jpg";
+        $this->storeFakeJpeg($path1);
+        $this->storeFakeJpeg($path2);
+
+        Livewire::actingAs($admin)
+            ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callAction('upload_profile_photo', data: ['photo' => [$path1]]);
+
+        // Restore path2 in case the action moved/deleted anything
+        $this->storeFakeJpeg($path2);
+
+        Livewire::actingAs($admin)
+            ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
+            ->callAction('upload_profile_photo', data: ['photo' => [$path2]]);
+
+        $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
+    }
+
+    // --- public page test ---
 
     public function test_public_memory_page_shows_profile_photo_when_available(): void
     {
@@ -140,14 +198,13 @@ class ProfilePhotoTest extends TestCase
 
         $owner = User::factory()->create(['role' => 'user']);
         $page  = MemoryPage::create([
-            'user_id'     => $owner->id,
-            'slug'        => 'testslug1',
-            'person_name' => 'Test Person',
+            'user_id'      => $owner->id,
+            'slug'         => 'testslug1',
+            'person_name'  => 'Test Person',
             'is_published' => true,
             'visibility'   => 'link',
         ]);
 
-        // Create a fake file on the public disk
         $fakePath = "memory-pages/{$page->id}/profile/photo.jpg";
         Storage::disk('public')->put($fakePath, 'fake-image-data');
 
@@ -161,9 +218,7 @@ class ProfilePhotoTest extends TestCase
             'sort_order'        => 0,
         ]);
 
-        $shortCode = $page->qrCode->short_code;
-
-        $response = $this->get("/m/{$shortCode}");
+        $response = $this->get("/m/{$page->qrCode->short_code}");
 
         $response->assertOk();
         $response->assertSee(Storage::disk('public')->url($fakePath), false);
