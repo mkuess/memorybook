@@ -1,0 +1,91 @@
+Bring the customer MemoryPage edit page in line with the current profile editing features.
+
+Current issue:
+- Many profile-related improvements were added to the Filament/admin MemoryPage edit page.
+- The customer MemoryPage edit page does not show the same important profile editing sections.
+- Customers need to manage their own profile content when editing a memory page.
+
+Requirements:
+- Update the customer memory page edit page.
+- This is likely resources/views/memory-pages/edit.blade.php and related routes/controllers.
+- Keep the page customer-focused and simple.
+- Only the owner may access and update this page.
+- Do not expose admin-only fields or actions.
+
+Customer edit page should include these sections in a clear order:
+
+1. Profilfoto
+- show current profile photo if present
+- show "Noch kein Profilfoto hochgeladen." if none exists
+- show file input and upload button directly on the page
+- do not open a separate upload page
+- use normal multipart POST, not Livewire/FileUpload
+- accepted: jpg, jpeg, png, webp
+- max 5 MB
+- keep existing profile photo upload route/controller if possible
+
+2. Basisdaten
+- person_name
+- birth_date
+- death_date
+- short_bio
+
+3. Galerie
+- gallery belongs directly to the memory page
+- collection = gallery
+- max 5 images
+- show uploaded gallery images as compact list rows:
+  - small thumbnail max 64x64
+  - filename
+  - thumbnail opens full image in new tab
+  - delete action with trash icon/text "Löschen" if delete route exists
+- show upload field if fewer than 5 images exist
+- show "Maximal 5 Galeriebilder möglich." if limit reached
+- use normal multipart POST
+- do not show huge images
+- prevent image overflow on mobile
+
+4. Sichtbarkeit und Veröffentlichung
+- show visibility selector:
+  - Privat
+  - Nur per Link
+  - Öffentlich
+- show publish/unpublish controls with consent checkbox if publishing is required
+- use customer-friendly labels:
+  - "Veröffentlichen"
+  - "Nicht mehr veröffentlichen"
+- do not show admin lock/block controls
+
+5. Links / nächste Schritte
+- link to story management for this memory page:
+  - label "Stories verwalten"
+- link to QR-code info page:
+  - label "QR-Code anzeigen"
+
+Do not include:
+- admin lock/is_locked controls
+- owner/user selector
+- admin notes
+- Filament components
+- admin-only actions
+
+Public page:
+- do not change public /m/{code} behavior except keep existing gallery/profile/story display working.
+
+Tests:
+- add/update tests proving:
+  - owner sees profile photo section on customer edit page
+  - owner sees gallery section on customer edit page
+  - owner can upload profile photo from customer edit page
+  - owner can upload gallery image from customer edit page
+  - customer edit page lists gallery images in compact thumbnail rows
+  - gallery thumbnails open in new tab
+  - non-owner cannot access customer edit page
+  - admin-only lock controls are not shown on customer edit page
+  - story management link is visible
+  - QR-code link is visible
+
+Run:
+- php artisan test
+- npm run build if CSS/JS changed
+- show changed files and test/build results

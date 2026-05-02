@@ -6,10 +6,10 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            {{-- Profile photo --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+            {{-- 1. Profilfoto --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-base font-semibold text-gray-800 mb-4">Profilfoto</h3>
 
@@ -41,6 +41,7 @@
                                 Foto hochladen
                             </button>
                         </div>
+                        <p class="mt-1 text-xs text-gray-400">Erlaubt: JPG, PNG oder WebP bis 5 MB.</p>
                         @error('photo')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -48,9 +49,14 @@
                 </div>
             </div>
 
-            {{-- Main form --}}
+            {{-- 2. Basisdaten --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
+                    <h3 class="text-base font-semibold text-gray-800 mb-4">Basisdaten</h3>
+
+                    @if (session('basisdaten_success'))
+                        <p class="text-sm text-green-700 mb-4">{{ session('basisdaten_success') }}</p>
+                    @endif
 
                     <form method="POST" action="{{ route('memory-pages.update', $memoryPage) }}">
                         @csrf
@@ -105,7 +111,7 @@
                             @enderror
                         </div>
 
-                        <div class="mb-5">
+                        <div class="mb-6">
                             <label for="short_bio" class="block text-sm font-medium text-gray-700 mb-1">
                                 Kurze Biografie
                             </label>
@@ -120,46 +126,17 @@
                             @enderror
                         </div>
 
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Sichtbarkeit
-                            </label>
-                            <div class="space-y-2">
-                                @foreach (['private' => 'Privat', 'link' => 'Nur per Link', 'public' => 'Öffentlich'] as $value => $label)
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="visibility"
-                                            value="{{ $value }}"
-                                            {{ old('visibility', $memoryPage->visibility) === $value ? 'checked' : '' }}
-                                            class="text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                        >
-                                        <span class="text-sm text-gray-700">{{ $label }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                            @error('visibility')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="flex items-center gap-4">
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Änderungen speichern
-                            </button>
-                            <a href="{{ route('dashboard') }}" class="text-sm text-gray-600 hover:text-gray-900">
-                                Abbrechen
-                            </a>
-                        </div>
+                        <button type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            Änderungen speichern
+                        </button>
 
                     </form>
-
                 </div>
             </div>
 
-            {{-- Gallery --}}
-            <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            {{-- 3. Galerie --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-base font-semibold text-gray-800 mb-4">Galerie</h3>
 
@@ -222,6 +199,7 @@
                                     Bild hochladen
                                 </button>
                             </div>
+                            <p class="mt-1 text-xs text-gray-400">Erlaubt: JPG, PNG oder WebP bis 5 MB. Maximal 5 Bilder.</p>
                             @error('image')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -230,25 +208,52 @@
                 </div>
             </div>
 
-            <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-base font-semibold text-gray-800">Erinnerungen</h3>
-                        <p class="mt-1 text-sm text-gray-600">
-                            {{ $memoryPage->stories()->count() }} Erinnerung(en) vorhanden
-                        </p>
-                    </div>
-                    <a href="{{ route('memory-pages.stories.index', $memoryPage) }}"
-                       class="text-sm text-indigo-600 hover:text-indigo-800">
-                        Verwalten &rarr;
-                    </a>
-                </div>
-            </div>
-
-            <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            {{-- 4. Sichtbarkeit und Veröffentlichung --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-base font-semibold text-gray-800 mb-4">Veröffentlichung</h3>
+                    <h3 class="text-base font-semibold text-gray-800 mb-4">Sichtbarkeit und Veröffentlichung</h3>
 
+                    {{-- Visibility --}}
+                    @if (session('visibility_success'))
+                        <p class="text-sm text-green-700 mb-4">{{ session('visibility_success') }}</p>
+                    @endif
+
+                    <form method="POST"
+                          action="{{ route('memory-pages.update-visibility', $memoryPage) }}"
+                          class="mb-6">
+                        @csrf
+                        @method('PUT')
+
+                        <fieldset class="mb-4">
+                            <legend class="text-sm font-medium text-gray-700 mb-2">Sichtbarkeit</legend>
+                            <div class="space-y-2">
+                                @foreach (['private' => 'Privat', 'link' => 'Nur per Link', 'public' => 'Öffentlich'] as $value => $label)
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="visibility"
+                                            value="{{ $value }}"
+                                            {{ old('visibility', $memoryPage->visibility) === $value ? 'checked' : '' }}
+                                            class="text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                        >
+                                        <span class="text-sm text-gray-700">{{ $label }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('visibility')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </fieldset>
+
+                        <button type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            Sichtbarkeit speichern
+                        </button>
+                    </form>
+
+                    <hr class="border-gray-100 mb-6">
+
+                    {{-- Publish / Unpublish --}}
                     @if ($memoryPage->is_published)
                         <p class="text-sm text-green-700 mb-4">
                             Diese Seite ist veröffentlicht.
@@ -260,7 +265,7 @@
                             @csrf
                             <button type="submit"
                                 class="inline-flex items-center px-4 py-2 bg-red-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Veröffentlichung zurückziehen
+                                Nicht mehr veröffentlichen
                             </button>
                         </form>
                     @else
@@ -285,10 +290,28 @@
                             </div>
                             <button type="submit"
                                 class="inline-flex items-center px-4 py-2 bg-green-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Seite veröffentlichen
+                                Veröffentlichen
                             </button>
                         </form>
                     @endif
+
+                </div>
+            </div>
+
+            {{-- 5. Links / nächste Schritte --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-base font-semibold text-gray-800 mb-4">Weitere Optionen</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{{ route('memory-pages.stories.index', $memoryPage) }}"
+                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            Stories verwalten
+                        </a>
+                        <a href="{{ route('memory-pages.qr-code', $memoryPage) }}"
+                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            QR-Code anzeigen
+                        </a>
+                    </div>
                 </div>
             </div>
 

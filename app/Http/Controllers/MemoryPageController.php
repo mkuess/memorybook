@@ -56,12 +56,26 @@ class MemoryPageController extends Controller
             'birth_date'  => ['nullable', 'date'],
             'death_date'  => ['nullable', 'date'],
             'short_bio'   => ['nullable', 'string'],
-            'visibility'  => ['required', 'string', 'in:private,link,public'],
         ]);
 
         $memoryPage->update($validated);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('memory-pages.edit', $memoryPage)
+            ->with('basisdaten_success', 'Basisdaten wurden gespeichert.');
+    }
+
+    public function updateVisibility(Request $request, MemoryPage $memoryPage): RedirectResponse
+    {
+        Gate::allowIf(auth()->id() === $memoryPage->user_id);
+
+        $validated = $request->validate([
+            'visibility' => ['required', 'string', 'in:private,link,public'],
+        ]);
+
+        $memoryPage->update($validated);
+
+        return redirect()->route('memory-pages.edit', $memoryPage)
+            ->with('visibility_success', 'Sichtbarkeit wurde gespeichert.');
     }
 
     public function publish(Request $request, MemoryPage $memoryPage): RedirectResponse

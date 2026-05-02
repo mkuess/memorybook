@@ -20,14 +20,6 @@ class MemoryPageVisibilityTest extends TestCase
         ]);
     }
 
-    private function basePayload(array $overrides = []): array
-    {
-        return array_merge([
-            'person_name' => 'Max Mustermann',
-            'visibility'  => 'private',
-        ], $overrides);
-    }
-
     #[\PHPUnit\Framework\Attributes\DataProvider('visibilityProvider')]
     public function test_owner_can_update_visibility(string $visibility): void
     {
@@ -35,11 +27,11 @@ class MemoryPageVisibilityTest extends TestCase
         $page = $this->createPageForUser($user);
 
         $response = $this->actingAs($user)->put(
-            route('memory-pages.update', $page),
-            $this->basePayload(['visibility' => $visibility])
+            route('memory-pages.update-visibility', $page),
+            ['visibility' => $visibility]
         );
 
-        $response->assertRedirect(route('dashboard'));
+        $response->assertRedirect(route('memory-pages.edit', $page));
         $this->assertSame($visibility, $page->fresh()->visibility);
     }
 
@@ -58,8 +50,8 @@ class MemoryPageVisibilityTest extends TestCase
         $page = $this->createPageForUser($user);
 
         $response = $this->actingAs($user)->put(
-            route('memory-pages.update', $page),
-            $this->basePayload(['visibility' => 'secret'])
+            route('memory-pages.update-visibility', $page),
+            ['visibility' => 'secret']
         );
 
         $response->assertSessionHasErrors('visibility');
@@ -73,8 +65,8 @@ class MemoryPageVisibilityTest extends TestCase
         $page  = $this->createPageForUser($owner);
 
         $response = $this->actingAs($other)->put(
-            route('memory-pages.update', $page),
-            $this->basePayload(['visibility' => 'public'])
+            route('memory-pages.update-visibility', $page),
+            ['visibility' => 'public']
         );
 
         $response->assertForbidden();
