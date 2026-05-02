@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Media;
 use App\Models\MemoryPage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,5 +63,20 @@ class GalleryController extends Controller
         ]);
 
         return back()->with('gallery_success', 'Bild wurde hochgeladen.');
+    }
+
+    public function destroy(MemoryPage $memoryPage, Media $media): RedirectResponse
+    {
+        Gate::allowIf(auth()->id() === $memoryPage->user_id);
+
+        abort_if(
+            $media->memory_page_id !== $memoryPage->id || $media->collection !== 'gallery',
+            404
+        );
+
+        Storage::disk('public')->delete($media->path);
+        $media->delete();
+
+        return back()->with('gallery_success', 'Bild wurde entfernt.');
     }
 }

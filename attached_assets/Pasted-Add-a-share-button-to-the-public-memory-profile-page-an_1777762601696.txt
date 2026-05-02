@@ -1,0 +1,69 @@
+Add a share button to the public memory profile page and adjust its colors to the project brand colors.
+
+Requirements:
+- update the public memory page /m/{code}
+- add a button below the centered date section
+- button label: "Profil teilen"
+- button should share/copy the current public profile URL
+
+Share behavior:
+- use progressive enhancement:
+  - if navigator.share is available:
+    - open the native share dialog
+    - share title should include the person_name
+    - share URL should be the current page URL
+  - otherwise:
+    - copy the current page URL to the clipboard
+    - show the message: "In die Zwischenablage kopiert."
+- if clipboard copy fails:
+  - show a calm fallback message: "Link konnte nicht automatisch kopiert werden."
+- keep this JavaScript small and inline or in the existing app JS, whichever is simpler
+- no external packages
+- button must work on mobile and desktop where supported
+
+Placement:
+- public page header currently has:
+  - centered profile photo
+  - centered person_name
+  - centered birth/death date
+- place the "Profil teilen" button directly below the date section
+- keep short_bio left-aligned below it
+
+Design:
+- adapt the public profile page colors to the main project brand colors
+- use the existing project brand colors already defined in the codebase/theme
+- if exact brand colors are not centrally defined yet, create simple reusable CSS variables or Tailwind theme values
+- keep the page calm, respectful, and readable
+- avoid strong marketing styling
+- buttons should be rectangular, not pill-shaped
+- reduce button border radius
+- ensure good contrast
+- apply brand styling to:
+  - page background
+  - main text
+  - headings/name
+  - share button
+  - subtle dividers/cards if present
+
+Do not change:
+- route behavior
+- availability rules
+- database fields
+- admin area
+- customer edit area
+- QR code behavior
+- story visibility logic
+- gallery logic
+
+Tests:
+- add/update tests proving:
+  - public page shows "Profil teilen"
+  - share button is rendered below the date/person header area where practical
+  - public page includes copy/share JavaScript
+  - unavailable/private/unpublished/locked pages do not show the share button
+  - public page still shows profile photo, short_bio, gallery, and published stories when present
+
+Run:
+- php artisan test
+- npm run build if CSS/JS changed
+- show changed files and test/build results

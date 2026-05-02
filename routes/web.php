@@ -32,6 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/memory-pages/{memoryPage}/profile-photo/upload', [ProfilePhotoController::class, 'create'])->name('memory-pages.profile-photo.create');
     Route::post('/memory-pages/{memoryPage}/profile-photo', [ProfilePhotoController::class, 'store'])->name('memory-pages.profile-photo.store');
     Route::post('/memory-pages/{memoryPage}/gallery', [GalleryController::class, 'store'])->name('memory-pages.gallery.store');
+    Route::delete('/memory-pages/{memoryPage}/gallery/{media}', [GalleryController::class, 'destroy'])->name('memory-pages.gallery.destroy');
     Route::post('/memory-pages/{memoryPage}/admin-gallery', [AdminGalleryController::class, 'store'])->name('memory-pages.admin-gallery.store');
     Route::delete('/memory-pages/{memoryPage}/admin-gallery/{media}', [AdminGalleryController::class, 'destroy'])->name('memory-pages.admin-gallery.destroy');
 
