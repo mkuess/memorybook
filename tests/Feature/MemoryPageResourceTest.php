@@ -492,15 +492,22 @@ class MemoryPageResourceTest extends TestCase
         $response = $this->actingAs($admin)->get('/admin/memory-pages');
 
         $response->assertOk();
-        // The row recordUrl is the view URL: /admin/memory-pages/{id}
-        // The edit action URL is /admin/memory-pages/{id}/edit (longer path)
-        // Searching for the view URL with a trailing slash or quote ensures
-        // we match the view href and not just the edit href prefix.
-        $viewUrl = '/admin/memory-pages/' . $page->id;
-        $response->assertSee($viewUrl, false);
-        // Confirm the URL without /edit appears separately from the edit action
-        $content = $response->getContent();
-        $this->assertStringContainsString($viewUrl, $content);
+
+        // The row recordUrl must be the exact view URL, not the edit URL.
+        // Searching with a closing quote ensures we don't match the /edit suffix.
+        $viewUrlExact = '/admin/memory-pages/' . $page->id . '"';
+        $response->assertSee($viewUrlExact, false);
+    }
+
+    public function test_memory_page_table_edit_action_points_to_edit_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('/admin/memory-pages/' . $page->id . '/edit', false);
     }
 
     // --- toggle lock action tests ---

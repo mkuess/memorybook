@@ -232,9 +232,6 @@ class MemoryPageResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->recordUrl(fn (MemoryPage $record): string =>
-                static::getUrl('view', ['record' => $record])
-            )
             ->filters([
                 Tables\Filters\SelectFilter::make('visibility')
                     ->label('Sichtbarkeit')
