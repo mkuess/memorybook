@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\MemoryPageResource\Pages;
 
 use App\Filament\Resources\MemoryPageResource;
+use App\Filament\Resources\QrCodeResource;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -13,6 +14,15 @@ class ViewMemoryPage extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('view_qr_code')
+                ->label('QR-Code anzeigen')
+                ->icon('heroicon-o-qr-code')
+                ->url(fn (): ?string => $this->record->qrCode
+                    ? QrCodeResource::getUrl('view', ['record' => $this->record->qrCode])
+                    : null
+                )
+                ->visible(fn (): bool => (bool) $this->record->qrCode),
+
             Action::make('edit')
                 ->label('Beitrag bearbeiten')
                 ->icon('heroicon-o-pencil-square')

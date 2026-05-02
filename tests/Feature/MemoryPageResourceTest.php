@@ -327,6 +327,45 @@ class MemoryPageResourceTest extends TestCase
         $this->assertGreaterThan($posGesper, $posButton, '"Jetzt blockieren" should appear after "Gesperrt"');
     }
 
+    // --- header QR code action tests ---
+
+    public function test_detail_view_header_shows_qr_code_anzeigen_when_qr_code_exists(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $this->assertNotNull($page->qrCode);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee('QR-Code anzeigen');
+    }
+
+    public function test_detail_view_header_qr_code_action_links_to_qr_code_resource_view(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertSee("/admin/qr-codes/{$page->qrCode->id}", false);
+    }
+
+    public function test_detail_view_header_does_not_show_qr_code_anzeigen_when_no_qr_code(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->qrCode()->delete();
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}");
+
+        $response->assertOk();
+        $response->assertDontSee('QR-Code anzeigen');
+    }
+
     // --- header edit action tests ---
 
     public function test_detail_view_header_shows_beitrag_bearbeiten(): void
