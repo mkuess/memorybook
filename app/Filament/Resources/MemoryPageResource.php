@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MemoryPageResource\Pages;
 use App\Models\MemoryPage;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists;
@@ -30,6 +31,25 @@ class MemoryPageResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('user_id')
+                    ->label('Inhaber')
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search): array {
+                        return User::where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orderBy('name')
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn (User $u): array => [$u->id => "{$u->name} ({$u->email})"])
+                            ->toArray();
+                    })
+                    ->getOptionLabelUsing(function ($value): ?string {
+                        $user = User::find($value);
+                        return $user ? "{$user->name} ({$user->email})" : null;
+                    })
+                    ->required()
+                    ->visibleOn('create'),
+
                 Forms\Components\TextInput::make('person_name')
                     ->label('Person')
                     ->required()
@@ -178,9 +198,10 @@ class MemoryPageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMemoryPages::route('/'),
-            'view'  => Pages\ViewMemoryPage::route('/{record}'),
-            'edit'  => Pages\EditMemoryPage::route('/{record}/edit'),
+            'index'  => Pages\ListMemoryPages::route('/'),
+            'create' => Pages\CreateMemoryPage::route('/create'),
+            'view'   => Pages\ViewMemoryPage::route('/{record}'),
+            'edit'   => Pages\EditMemoryPage::route('/{record}/edit'),
         ];
     }
 }

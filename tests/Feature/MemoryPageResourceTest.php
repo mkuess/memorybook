@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\MemoryPageResource\Pages\CreateMemoryPage;
 use App\Filament\Resources\MemoryPageResource\Pages\EditMemoryPage;
 use App\Models\MemoryPage;
 use App\Models\User;
@@ -23,6 +24,8 @@ class MemoryPageResourceTest extends TestCase
             'person_name' => 'Max Mustermann',
         ]);
     }
+
+    // --- existing list/view/edit tests ---
 
     public function test_admin_can_access_memory_page_list(): void
     {
@@ -82,5 +85,89 @@ class MemoryPageResourceTest extends TestCase
             ->call('save');
 
         $this->assertTrue($page->fresh()->is_locked);
+    }
+
+    // --- create tests ---
+
+    public function test_admin_can_access_create_memory_page_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages/create');
+
+        $response->assertOk();
+    }
+
+    public function test_admin_can_create_a_memory_page_for_selected_user(): void
+    {
+        $admin      = User::factory()->create(['role' => 'admin']);
+        $targetUser = User::factory()->create(['role' => 'user']);
+
+        Livewire::actingAs($admin)
+            ->test(CreateMemoryPage::class)
+            ->fillForm([
+                'user_id'      => $targetUser->id,
+                'person_name'  => 'Erika Musterfrau',
+                'visibility'   => 'private',
+                'is_published' => false,
+                'is_locked'    => false,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('memory_pages', [
+            'user_id'     => $targetUser->id,
+            'person_name' => 'Erika Musterfrau',
+        ]);
+    }
+
+    public function test_created_page_has_generated_slug(): void
+    {
+        $admin      = User::factory()->create(['role' => 'admin']);
+        $targetUser = User::factory()->create(['role' => 'user']);
+
+        Livewire::actingAs($admin)
+            ->test(CreateMemoryPage::class)
+            ->fillForm([
+                'user_id'     => $targetUser->id,
+                'person_name' => 'Erika Musterfrau',
+                'visibility'  => 'private',
+            ])
+            ->call('create');
+
+        $page = MemoryPage::where('person_name', 'Erika Musterfrau')->first();
+
+        $this->assertNotNull($page);
+        $this->assertNotEmpty($page->slug);
+    }
+
+    public function test_created_page_has_qr_code_record(): void
+    {
+        $admin      = User::factory()->create(['role' => 'admin']);
+        $targetUser = User::factory()->create(['role' => 'user']);
+
+        Livewire::actingAs($admin)
+            ->test(CreateMemoryPage::class)
+            ->fillForm([
+                'user_id'     => $targetUser->id,
+                'person_name' => 'Erika Musterfrau',
+                'visibility'  => 'private',
+            ])
+            ->call('create');
+
+        $page = MemoryPage::where('person_name', 'Erika Musterfrau')->first();
+
+        $this->assertNotNull($page);
+        $this->assertNotNull($page->qrCode);
+        $this->assertNotEmpty($page->qrCode->short_code);
+    }
+
+    public function test_normal_user_cannot_create_memory_page_through_filament(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+
+        $response = $this->actingAs($user)->get('/admin/memory-pages/create');
+
+        $response->assertForbidden();
     }
 }
