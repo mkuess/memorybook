@@ -2,14 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MemoryPage;
+use App\Models\QrCode;
 use Illuminate\View\View;
 
 class PublicMemoryPageController extends Controller
 {
-    public function show(string $slug): View
+    public function show(string $code): View
     {
-        $page = MemoryPage::where('slug', $slug)->first();
+        $qr = QrCode::where('short_code', $code)->first();
+
+        if ($qr === null) {
+            return view('memory-pages.unavailable');
+        }
+
+        $qr->increment('scan_count');
+
+        $page = $qr->memoryPage;
 
         if (! $this->isVisible($page)) {
             return view('memory-pages.unavailable');
@@ -18,7 +26,7 @@ class PublicMemoryPageController extends Controller
         return view('memory-pages.show', compact('page'));
     }
 
-    private function isVisible(?MemoryPage $page): bool
+    private function isVisible($page): bool
     {
         if ($page === null) {
             return false;

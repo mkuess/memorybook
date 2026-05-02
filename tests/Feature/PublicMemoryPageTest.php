@@ -11,13 +11,15 @@ class PublicMemoryPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const UNAVAILABLE = 'Diese Erinnerungsseite ist derzeit nicht öffentlich verfügbar.';
+
     private function makePage(array $attrs = []): MemoryPage
     {
         $user = User::factory()->create();
 
         return MemoryPage::create(array_merge([
             'user_id'      => $user->id,
-            'slug'         => 'testslug',
+            'slug'         => substr(md5(uniqid()), 0, 8),
             'person_name'  => 'Max Mustermann',
             'is_published' => true,
             'is_locked'    => false,
@@ -25,13 +27,12 @@ class PublicMemoryPageTest extends TestCase
         ], $attrs));
     }
 
-    private const UNAVAILABLE = 'Diese Erinnerungsseite ist derzeit nicht öffentlich verfügbar.';
-
     public function test_published_link_page_is_visible(): void
     {
-        $this->makePage(['visibility' => 'link']);
+        $page = $this->makePage(['visibility' => 'link']);
+        $code = $page->qrCode->short_code;
 
-        $response = $this->get('/m/testslug');
+        $response = $this->get("/m/{$code}");
 
         $response->assertOk();
         $response->assertSee('Max Mustermann');
@@ -39,9 +40,10 @@ class PublicMemoryPageTest extends TestCase
 
     public function test_published_public_page_is_visible(): void
     {
-        $this->makePage(['visibility' => 'public']);
+        $page = $this->makePage(['visibility' => 'public']);
+        $code = $page->qrCode->short_code;
 
-        $response = $this->get('/m/testslug');
+        $response = $this->get("/m/{$code}");
 
         $response->assertOk();
         $response->assertSee('Max Mustermann');
@@ -49,9 +51,10 @@ class PublicMemoryPageTest extends TestCase
 
     public function test_private_page_shows_calm_unavailable_message(): void
     {
-        $this->makePage(['visibility' => 'private']);
+        $page = $this->makePage(['visibility' => 'private']);
+        $code = $page->qrCode->short_code;
 
-        $response = $this->get('/m/testslug');
+        $response = $this->get("/m/{$code}");
 
         $response->assertOk();
         $response->assertSee(self::UNAVAILABLE);
@@ -60,9 +63,10 @@ class PublicMemoryPageTest extends TestCase
 
     public function test_unpublished_page_shows_calm_unavailable_message(): void
     {
-        $this->makePage(['is_published' => false]);
+        $page = $this->makePage(['is_published' => false]);
+        $code = $page->qrCode->short_code;
 
-        $response = $this->get('/m/testslug');
+        $response = $this->get("/m/{$code}");
 
         $response->assertOk();
         $response->assertSee(self::UNAVAILABLE);
@@ -71,9 +75,10 @@ class PublicMemoryPageTest extends TestCase
 
     public function test_locked_page_shows_calm_unavailable_message(): void
     {
-        $this->makePage(['is_locked' => true]);
+        $page = $this->makePage(['is_locked' => true]);
+        $code = $page->qrCode->short_code;
 
-        $response = $this->get('/m/testslug');
+        $response = $this->get("/m/{$code}");
 
         $response->assertOk();
         $response->assertSee(self::UNAVAILABLE);
