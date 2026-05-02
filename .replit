@@ -42,3 +42,11 @@ externalPort = 8000
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=5000"]
 build = ["bash", "-c", "composer install --no-dev --optimize-autoloader && npm run build"]
+
+[userenv]
+
+[userenv.shared]
+APP_NAME = "memorybook"
+APP_LOCALE = "de"
+APP_FALLBACK_LOCALE = "de"
+APP_FAKER_LOCALE = "de_DE"

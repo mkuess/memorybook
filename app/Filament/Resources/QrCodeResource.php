@@ -32,7 +32,7 @@ class QrCodeResource extends Resource
                     ->label('Erinnerungsseite'),
 
                 Infolists\Components\TextEntry::make('short_code')
-                    ->label('QR-Code')
+                    ->label('Kurzcode')
                     ->fontFamily('mono'),
 
                 Infolists\Components\TextEntry::make('public_url')
@@ -68,7 +68,7 @@ class QrCodeResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('short_code')
-                    ->label('QR-Code')
+                    ->label('Kurzcode')
                     ->fontFamily('mono')
                     ->searchable(),
 

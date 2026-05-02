@@ -20,7 +20,7 @@ class PlaqueOrderResource extends Resource
 
     protected static ?string $navigationLabel = 'Plaketten';
 
-    protected static ?string $modelLabel = 'Plakettenbestellung';
+    protected static ?string $modelLabel = 'Plakettenanfrage';
 
     protected static ?string $pluralModelLabel = 'Plaketten';
 
