@@ -52,6 +52,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Story::class);
     }
 
+    public function plaqueOrders(): HasMany
+    {
+        return $this->hasMany(PlaqueOrder::class);
+    }
+
     protected function casts(): array
     {
         return [
