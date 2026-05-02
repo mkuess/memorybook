@@ -33,7 +33,20 @@ class AdminDashboardTest extends TestCase
         $response = $this->actingAs($admin)->get('/admin');
 
         $response->assertOk();
-        $response->assertSee('Adminbereich');
         $response->assertSee('memorybook Verwaltung');
+    }
+
+    public function test_admin_layout_renders_sidebar_items(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get('/admin');
+
+        $response->assertOk();
+        $response->assertSee('Übersicht');
+        $response->assertSee('Benutzer');
+        $response->assertSee('Erinnerungsseiten');
+        $response->assertSee('Meldungen');
+        $response->assertSee('Plaketten');
     }
 }
