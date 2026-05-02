@@ -1,4 +1,4 @@
-FROM php:8.4-fpm-alpine
+FROM php:8.2-fpm-alpine
 
 WORKDIR /var/www/html
 
@@ -13,7 +13,9 @@ RUN apk add --no-cache \
     postgresql-dev \
     icu-dev \
     zip \
-    libzip-dev
+    libzip-dev \
+    nodejs \
+    npm
 
 RUN docker-php-ext-configure gd \
     --with-freetype \
@@ -27,13 +29,16 @@ RUN docker-php-ext-install \
     mbstring \
     zip \
     bcmath \
-    exif
+    exif \
+    pcntl
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . .
 
-RUN composer install --optimize-autoloader --no-interaction
+RUN composer install --optimize-autoloader --no-interaction --no-dev
+
+RUN npm ci && npm run build && rm -rf node_modules
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 

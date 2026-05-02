@@ -3,52 +3,55 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: memorybook_app
+    container_name: app
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - ./storage:/var/www/html/storage
       - ./bootstrap/cache:/var/www/html/bootstrap/cache
-      - ./:/var/www/html
-      - ./docker/php/www.conf:/usr/local/etc/php-fpm.d/zz-memorybook.conf:ro
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
-      - memorybook_net
+      - app_net
 
   web:
-    image: nginx:alpine
-    container_name: memorybook_web
+    image: nginx:1.26-alpine
+    container_name: web
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "${APP_PORT:-80}:80"
     volumes:
-      - ./:/var/www/html:ro
-      - ./storage:/var/www/html/storage
+      - ./public:/var/www/html/public:ro
+      - ./storage/app/public:/var/www/html/public/storage:ro
       - ./nginx/app.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
     networks:
-      - memorybook_net
+      - app_net
 
   db:
     image: postgres:16-alpine
-    container_name: memorybook_db
+    container_name: db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: memorybook_db
-      POSTGRES_USER: memorybook_user
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - memorybook_pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
-      - memorybook_net
+      - app_net
 
 volumes:
-  memorybook_pgdata:
+  pgdata:
 
 networks:
-  memorybook_net:
-    name: memorybook_net
+  app_net:
     driver: bridge
