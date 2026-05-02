@@ -39,6 +39,21 @@
 
             </div>
 
+            @if ($stories->isNotEmpty())
+                <div class="mt-8 space-y-6">
+                    @foreach ($stories as $story)
+                        <div class="bg-white rounded-lg shadow-sm p-8">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-3">
+                                {{ $story->title }}
+                            </h2>
+                            <div class="prose prose-gray max-w-none">
+                                <p>{{ $story->content }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
         </div>
     </div>
 

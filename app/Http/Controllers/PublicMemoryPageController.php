@@ -23,7 +23,13 @@ class PublicMemoryPageController extends Controller
             return view('memory-pages.unavailable');
         }
 
-        return view('memory-pages.show', compact('page'));
+        $stories = $page->stories()
+            ->where('is_published', true)
+            ->orderBy('sort_order')
+            ->orderBy('created_at')
+            ->get();
+
+        return view('memory-pages.show', compact('page', 'stories'));
     }
 
     private function isVisible($page): bool
