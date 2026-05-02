@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -39,6 +40,11 @@ class User extends Authenticatable implements FilamentUser
     public function isUser(): bool
     {
         return $this->role === 'user';
+    }
+
+    public function memoryPages(): HasMany
+    {
+        return $this->hasMany(MemoryPage::class);
     }
 
     protected function casts(): array
