@@ -157,7 +157,7 @@ class ProfilePhotoTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callAction('upload_profile_photo', data: ['photo' => [$path]]);
+            ->callFormComponentAction('upload_profile_photoAction', 'upload_profile_photo', data: ['photo' => [$path]]);
 
         $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
     }
@@ -178,14 +178,14 @@ class ProfilePhotoTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callAction('upload_profile_photo', data: ['photo' => [$path1]]);
+            ->callFormComponentAction('upload_profile_photoAction', 'upload_profile_photo', data: ['photo' => [$path1]]);
 
         // Restore path2 in case the action moved/deleted anything
         $this->storeFakeJpeg($path2);
 
         Livewire::actingAs($admin)
             ->test(EditMemoryPage::class, ['record' => $page->getRouteKey()])
-            ->callAction('upload_profile_photo', data: ['photo' => [$path2]]);
+            ->callFormComponentAction('upload_profile_photoAction', 'upload_profile_photo', data: ['photo' => [$path2]]);
 
         $this->assertCount(1, $page->fresh()->media()->where('collection', 'profile')->get());
     }

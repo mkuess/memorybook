@@ -12,6 +12,8 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 class MemoryPageResource extends Resource
 {
@@ -31,6 +33,68 @@ class MemoryPageResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Profilfoto')
+                    ->schema([
+                        Forms\Components\Placeholder::make('profile_photo_preview')
+                            ->label('')
+                            ->content(function (?MemoryPage $record): HtmlString {
+                                if (! $record) {
+                                    return new HtmlString('<p class="text-sm text-gray-500 dark:text-gray-400">Noch kein Profilfoto hochgeladen.</p>');
+                                }
+                                $photo = $record->media()->where('collection', 'profile')->first();
+                                if (! $photo) {
+                                    return new HtmlString('<p class="text-sm text-gray-500 dark:text-gray-400">Noch kein Profilfoto hochgeladen.</p>');
+                                }
+                                $url = e(Storage::disk('public')->url($photo->path));
+                                return new HtmlString("<img src=\"{$url}\" alt=\"Profilfoto\" style=\"width:80px;height:80px;object-fit:cover;border-radius:9999px;\">");
+                            }),
+
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('upload_profile_photo')
+                                ->label('Profilfoto hochladen')
+                                ->icon('heroicon-o-camera')
+                                ->modalHeading('Profilfoto hochladen')
+                                ->modalSubmitActionLabel('Hochladen')
+                                ->hidden(fn (?MemoryPage $record): bool => $record === null)
+                                ->form([
+                                    Forms\Components\FileUpload::make('photo')
+                                        ->label('Foto auswählen')
+                                        ->disk('public')
+                                        ->directory('memory-pages/profile')
+                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                        ->maxSize(5120)
+                                        ->required(),
+                                ])
+                                ->action(function (array $data, $livewire): void {
+                                    $record = $livewire->record;
+                                    $path   = is_array($data['photo']) ? ($data['photo'][0] ?? '') : $data['photo'];
+
+                                    $existing = $record->media()->where('collection', 'profile')->first();
+                                    if ($existing) {
+                                        Storage::disk('public')->delete($existing->path);
+                                        $existing->delete();
+                                    }
+
+                                    $fullPath = Storage::disk('public')->path($path);
+                                    [$width, $height] = @getimagesize($fullPath) ?: [null, null];
+
+                                    $record->media()->create([
+                                        'collection'        => 'profile',
+                                        'filename'          => basename($path),
+                                        'original_filename' => basename($path),
+                                        'path'              => $path,
+                                        'mime_type'         => Storage::disk('public')->mimeType($path) ?: 'image/jpeg',
+                                        'size_bytes'        => Storage::disk('public')->size($path) ?: 0,
+                                        'width'             => $width ?: null,
+                                        'height'            => $height ?: null,
+                                        'sort_order'        => 0,
+                                    ]);
+                                }),
+                        ])->key('profile_photo_actions'),
+                    ])
+                    ->hiddenOn('create')
+                    ->columnSpanFull(),
+
                 Forms\Components\Select::make('user_id')
                     ->label('Inhaber')
                     ->searchable()
