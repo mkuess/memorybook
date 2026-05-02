@@ -75,6 +75,6 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('admin.dashboard', absolute: false));
+        $response->assertRedirect('/admin');
     }
 }

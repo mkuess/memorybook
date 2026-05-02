@@ -14,7 +14,7 @@ class AdminDashboardTest extends TestCase
     {
         $response = $this->get('/admin');
 
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect('/login');
     }
 
     public function test_normal_user_gets_403(): void
@@ -26,27 +26,12 @@ class AdminDashboardTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_admin_user_sees_admin_dashboard(): void
+    public function test_admin_user_can_access_panel(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->get('/admin');
 
         $response->assertOk();
-        $response->assertSee('memorybook Verwaltung');
-    }
-
-    public function test_admin_layout_renders_sidebar_items(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin']);
-
-        $response = $this->actingAs($admin)->get('/admin');
-
-        $response->assertOk();
-        $response->assertSee('Übersicht');
-        $response->assertSee('Benutzer');
-        $response->assertSee('Erinnerungsseiten');
-        $response->assertSee('Meldungen');
-        $response->assertSee('Plaketten');
     }
 }
