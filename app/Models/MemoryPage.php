@@ -8,10 +8,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class MemoryPage extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::created(function (MemoryPage $page): void {
+            $page->qrCode()->create([
+                'short_code' => static::generateUniqueShortCode(),
+            ]);
+        });
+    }
+
+    private static function generateUniqueShortCode(): string
+    {
+        do {
+            $code = strtolower(Str::random(8));
+        } while (QrCode::where('short_code', $code)->exists());
+
+        return $code;
+    }
 
     protected $fillable = [
         'user_id',

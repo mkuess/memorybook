@@ -36,8 +36,6 @@ class QrCodeTest extends TestCase
     {
         $page = $this->makeMemoryPage();
 
-        QrCode::create($this->qrAttributes($page));
-
         $this->assertInstanceOf(QrCode::class, $page->qrCode);
         $this->assertEquals($page->id, $page->qrCode->memory_page_id);
     }
@@ -45,8 +43,7 @@ class QrCodeTest extends TestCase
     public function test_qr_code_belongs_to_memory_page(): void
     {
         $page = $this->makeMemoryPage();
-
-        $qr = QrCode::create($this->qrAttributes($page));
+        $qr   = $page->qrCode;
 
         $this->assertInstanceOf(MemoryPage::class, $qr->memoryPage);
         $this->assertEquals($page->id, $qr->memoryPage->id);
@@ -56,9 +53,7 @@ class QrCodeTest extends TestCase
     {
         $page = $this->makeMemoryPage();
 
-        $qr = QrCode::create($this->qrAttributes($page));
-
-        $this->assertSame(0, $qr->scan_count);
+        $this->assertSame(0, $page->qrCode->scan_count);
     }
 
     public function test_short_code_must_be_unique(): void
