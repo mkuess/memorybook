@@ -53,4 +53,9 @@ class MemoryPage extends Model
     {
         return $this->hasMany(Story::class);
     }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(Media::class);
+    }
 }
