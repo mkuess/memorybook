@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MemoryPageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,9 +13,10 @@ Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/memory-pages/create', fn () => abort(501))
-    ->middleware(['auth', 'verified'])
-    ->name('memory-pages.create');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/memory-pages/create', [MemoryPageController::class, 'create'])->name('memory-pages.create');
+    Route::post('/memory-pages', [MemoryPageController::class, 'store'])->name('memory-pages.store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
