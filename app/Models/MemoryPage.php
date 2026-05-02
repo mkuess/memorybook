@@ -69,4 +69,9 @@ class MemoryPage extends Model
     {
         return $this->hasMany(PlaqueOrder::class);
     }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class);
+    }
 }
