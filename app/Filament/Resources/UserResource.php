@@ -42,6 +42,13 @@ class UserResource extends Resource
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
 
+                Forms\Components\TextInput::make('password')
+                    ->label('Passwort')
+                    ->password()
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->dehydrateStateUsing(fn (string $state): string => bcrypt($state)),
+
                 Forms\Components\Select::make('role')
                     ->label('Rolle')
                     ->options([
@@ -110,7 +117,6 @@ class UserResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([]);
@@ -119,9 +125,10 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'view'  => Pages\ViewUser::route('/{record}'),
-            'edit'  => Pages\EditUser::route('/{record}/edit'),
+            'index'  => Pages\ListUsers::route('/'),
+            'create' => Pages\CreateUser::route('/create'),
+            'view'   => Pages\ViewUser::route('/{record}'),
+            'edit'   => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

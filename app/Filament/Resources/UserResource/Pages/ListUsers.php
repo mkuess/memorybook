@@ -11,6 +11,9 @@ class ListUsers extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            \Filament\Actions\CreateAction::make()
+                ->label('Benutzer erstellen'),
+        ];
     }
 }
