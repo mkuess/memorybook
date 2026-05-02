@@ -1,0 +1,95 @@
+Please update the existing backend/admin framework styling to match the new memorybook.at color direction.
+
+Important:
+- Do not change any business logic.
+- Do not change routes, models, controllers, database fields, permissions or workflows.
+- Only adjust visual styling, theme tokens, CSS variables, Tailwind colors or the framework theme configuration.
+- Keep the existing framework and component structure.
+- Avoid inline styles where a central theme or CSS variable solution is possible.
+
+Design direction:
+The interface should feel calm, respectful, warm and timeless. memorybook.at is a place for lasting memories, so the backend should not look like a loud SaaS product. Use soft, muted colors, clear readability and a stable, trustworthy visual tone.
+
+Main color palette:
+
+--mb-bg: #F8F5ED;
+--mb-surface: #FFFFFF;
+--mb-surface-soft: #EFEAE1;
+
+--mb-primary: #8FA7B0;
+--mb-primary-dark: #5F737B;
+
+--mb-secondary: #D8D2C8;
+--mb-secondary-dark: #BFB7AA;
+
+--mb-text: #2F2E2A;
+--mb-muted: #706B62;
+--mb-border: #DDD6CA;
+
+--mb-danger: #9A4F3F;
+--mb-success: #6F7F68;
+--mb-warning: #B08A4A;
+
+Color usage:
+- Use #F8F5ED as the main app background.
+- Use #FFFFFF or #EFEAE1 for cards, panels, forms and tables.
+- Use #8FA7B0 as the primary brand color.
+- Use #5F737B for hover states, active navigation items and stronger emphasis.
+- Use #D8D2C8 as the secondary calm neutral color.
+- Use #2F2E2A for main text.
+- Use #706B62 for secondary text.
+- Use #DDD6CA for borders and dividers.
+
+Buttons:
+- Buttons must be square or only slightly rounded.
+- Do not use pill-shaped or strongly rounded buttons.
+- Use a maximum border-radius of 4px or 6px.
+
+Primary button:
+- Background: #8FA7B0
+- Hover: #5F737B
+- Text: #FFFFFF
+- Border radius: 4px or 6px
+
+Secondary button:
+- Background: #EFEAE1 or transparent
+- Border: #DDD6CA
+- Text: #2F2E2A
+- Hover background: #D8D2C8
+- Border radius: 4px or 6px
+
+Danger button:
+- Background: #9A4F3F
+- Hover: slightly darker
+- Text: #FFFFFF
+- Border radius: 4px or 6px
+
+Status badges:
+- Published / approved: #6F7F68
+- Locked / blocked: #9A4F3F
+- Private: #706B62
+- Link only: #B08A4A
+- Public: #5F737B
+- In review: #B08A4A
+
+Backend areas to update:
+1. Main backend/admin background
+2. Sidebar and navigation
+3. Header/topbar
+4. Cards and panels
+5. Tables
+6. Forms, inputs, selects and checkboxes
+7. Buttons
+8. Status badges
+9. Hover states
+10. Focus states
+
+Technical implementation:
+- First look for existing central theme files, CSS variables, Tailwind config, Filament theme configuration or framework-specific design tokens.
+- If this is Filament, apply the colors through the Filament theme or central CSS file.
+- If Tailwind is used, add the memorybook colors to the Tailwind config or existing CSS token structure.
+- Do not scatter one-off color classes across many views unless there is no better option.
+- Keep the implementation clean, maintainable and easy to adjust later.
+
+Final result:
+The backend should have a calm cream-white background, blue-grey and warm light-grey as the two main visual colors, readable dark text, subtle borders, and square/slightly rounded buttons.

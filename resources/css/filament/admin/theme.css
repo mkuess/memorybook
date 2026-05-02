@@ -1,0 +1,118 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@config 'tailwind.config.js';
+
+/*
+ * memorybook.at admin theme
+ *
+ * These rules are intentionally written outside @layer so they take
+ * precedence over Tailwind's @layer utilities rules (unlayered CSS
+ * always wins in the CSS cascade layers spec).
+ *
+ * Color reference:
+ *   bg:           #F8F5ED  (gray-50 via custom scale)
+ *   surface-soft: #EFEAE1  (gray-100)
+ *   border:       #DDD6CA  (gray-300)
+ *   text:         #2F2E2A  (gray-900)
+ *   muted:        #706B62  (gray-600)
+ *   primary:      #8FA7B0  (primary-600)
+ *   primary-dark: #5F737B  (primary-700)
+ */
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+
+/* Mobile sidebar panel */
+.fi-sidebar {
+    background-color: rgb(var(--gray-100));
+}
+
+/* Desktop: transparent so the body bg (#F8F5ED) shows through */
+@media (min-width: 1024px) {
+    .fi-sidebar {
+        background-color: transparent;
+    }
+}
+
+/* Brand/logo header strip at the top of the sidebar */
+.fi-sidebar-header {
+    background-color: rgb(var(--gray-100));
+    box-shadow: none;
+    border-bottom: 1px solid rgb(var(--gray-300));
+    ring-color: transparent;
+}
+
+/* Override the ring-1 ring-gray-950/5 on the sidebar header */
+.fi-sidebar-header {
+    --tw-ring-color: transparent;
+}
+
+/* ── Topbar ──────────────────────────────────────────────────── */
+
+/* The topbar inner <div> carries bg-white hardcoded in Filament */
+.fi-topbar > div {
+    background-color: rgb(var(--gray-50));
+    border-bottom: 1px solid rgb(var(--gray-300));
+    box-shadow: none;
+}
+
+/* Remove the default shadow ring on topbar */
+.fi-topbar > div {
+    --tw-shadow: none;
+    --tw-ring-color: transparent;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+
+/*
+ * Filament uses rounded-lg (8px) for buttons. The design spec
+ * calls for square / slightly-rounded buttons (4–6px max).
+ */
+.fi-btn {
+    border-radius: 4px;
+}
+
+/* Keep icon-only buttons consistent */
+.fi-icon-btn {
+    border-radius: 4px;
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+
+/* Give tables a white card surface */
+.fi-ta-ctn {
+    border-radius: 4px;
+}
+
+/* ── Sections / Cards ────────────────────────────────────────── */
+
+.fi-section {
+    border-radius: 4px;
+}
+
+/* ── Modal / Dialog ──────────────────────────────────────────── */
+
+.fi-modal-window {
+    border-radius: 4px;
+}
+
+/* ── Dropdown ────────────────────────────────────────────────── */
+
+.fi-dropdown-list {
+    border-radius: 4px;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────── */
+
+.fi-input,
+.fi-select-input,
+.fi-fo-field-wrp input,
+.fi-fo-field-wrp select,
+.fi-fo-field-wrp textarea {
+    border-radius: 4px;
+}
+
+/* ── Badges ──────────────────────────────────────────────────── */
+
+.fi-badge {
+    border-radius: 4px;
+}
