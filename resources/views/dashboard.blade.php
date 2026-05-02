@@ -25,8 +25,11 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <ul class="divide-y divide-gray-100">
                         @foreach ($memoryPages as $page)
-                            <li class="p-6 text-gray-900">
-                                {{ $page->person_name }}
+                            <li class="p-6">
+                                <a href="{{ route('memory-pages.edit', $page) }}"
+                                   class="text-gray-900 hover:text-indigo-600 font-medium">
+                                    {{ $page->person_name }}
+                                </a>
                             </li>
                         @endforeach
                     </ul>

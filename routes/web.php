@@ -16,6 +16,8 @@ Route::get('/dashboard', DashboardController::class)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/memory-pages/create', [MemoryPageController::class, 'create'])->name('memory-pages.create');
     Route::post('/memory-pages', [MemoryPageController::class, 'store'])->name('memory-pages.store');
+    Route::get('/memory-pages/{memoryPage}/edit', [MemoryPageController::class, 'edit'])->name('memory-pages.edit');
+    Route::put('/memory-pages/{memoryPage}', [MemoryPageController::class, 'update'])->name('memory-pages.update');
 });
 
 Route::middleware('auth')->group(function () {
