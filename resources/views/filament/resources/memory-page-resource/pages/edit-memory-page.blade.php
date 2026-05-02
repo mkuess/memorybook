@@ -50,6 +50,8 @@
                 </button>
             </div>
 
+            <p class="text-xs text-gray-400">Erlaubt: JPG, PNG oder WebP bis 5 MB.</p>
+
             @error('photo')
                 <p class="text-sm text-red-600">{{ $message }}</p>
             @enderror
