@@ -131,26 +131,126 @@ class GalleryUploadTest extends TestCase
         $this->assertSame(5, $page->media()->where('collection', 'gallery')->count());
     }
 
+    private function createGalleryMedia(MemoryPage $page, string $filename = 'test.jpg'): \App\Models\Media
+    {
+        return Media::create([
+            'memory_page_id'    => $page->id,
+            'collection'        => 'gallery',
+            'filename'          => $filename,
+            'original_filename' => $filename,
+            'path'              => "memory-pages/{$page->id}/gallery/{$filename}",
+            'mime_type'         => 'image/jpeg',
+            'size_bytes'        => 102400,
+            'sort_order'        => 0,
+        ]);
+    }
+
     public function test_uploaded_gallery_images_are_listed_on_the_customer_edit_page(): void
     {
         Storage::fake('public');
         [$owner, $page] = $this->makeOwnerAndPage();
-
-        Media::create([
-            'memory_page_id'    => $page->id,
-            'collection'        => 'gallery',
-            'filename'          => 'test.jpg',
-            'original_filename' => 'test.jpg',
-            'path'              => "memory-pages/{$page->id}/gallery/test.jpg",
-            'mime_type'         => 'image/jpeg',
-            'size_bytes'        => 10000,
-            'sort_order'        => 0,
-        ]);
+        $this->createGalleryMedia($page, 'test.jpg');
 
         $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
         $response->assertSee("memory-pages/{$page->id}/gallery/test.jpg", false);
+    }
+
+    public function test_gallery_thumbnail_has_constrained_size_styles(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $this->createGalleryMedia($page, 'photo.jpg');
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        // inline style forces 64 × 64 px — prevents overflow from large intrinsic images
+        $response->assertSee('width:64px', false);
+        $response->assertSee('height:64px', false);
+        $response->assertSee('max-width:64px', false);
+        $response->assertSee('object-fit:cover', false);
+    }
+
+    public function test_gallery_thumbnail_link_opens_in_new_tab(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $this->createGalleryMedia($page, 'photo.jpg');
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('target="_blank"', false);
+        $response->assertSee('rel="noopener noreferrer"', false);
+    }
+
+    public function test_gallery_filename_is_visible_on_edit_page(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $this->createGalleryMedia($page, 'mein-foto.jpg');
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('mein-foto.jpg');
+    }
+
+    public function test_gallery_delete_button_shows_loeschen_text(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $this->createGalleryMedia($page, 'photo.jpg');
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Löschen');
+    }
+
+    public function test_owner_can_delete_own_gallery_image(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $media = $this->createGalleryMedia($page, 'photo.jpg');
+
+        $response = $this->actingAs($owner)->delete(
+            route('memory-pages.gallery.destroy', [$page, $media])
+        );
+
+        $response->assertRedirect();
+        $this->assertSame(0, $page->media()->where('collection', 'gallery')->count());
+    }
+
+    public function test_non_owner_cannot_delete_gallery_image(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $media = $this->createGalleryMedia($page, 'photo.jpg');
+        $other = User::factory()->create(['role' => 'user']);
+
+        $response = $this->actingAs($other)->delete(
+            route('memory-pages.gallery.destroy', [$page, $media])
+        );
+
+        $response->assertForbidden();
+        $this->assertSame(1, $page->media()->where('collection', 'gallery')->count());
+    }
+
+    public function test_deleting_gallery_image_removes_media_record(): void
+    {
+        Storage::fake('public');
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $media = $this->createGalleryMedia($page, 'photo.jpg');
+        $mediaId = $media->id;
+
+        $this->actingAs($owner)->delete(
+            route('memory-pages.gallery.destroy', [$page, $media])
+        );
+
+        $this->assertDatabaseMissing('media', ['id' => $mediaId]);
     }
 
     public function test_public_memory_page_shows_gallery_images(): void

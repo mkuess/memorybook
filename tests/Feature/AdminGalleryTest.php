@@ -157,6 +157,60 @@ class AdminGalleryTest extends TestCase
         $this->assertSame(1, $otherPage->media()->where('collection', 'gallery')->count());
     }
 
+    // --- thumbnail layout tests ---
+
+    public function test_admin_gallery_thumbnail_has_constrained_size_styles(): void
+    {
+        Storage::fake('public');
+        [$admin, $page] = $this->makeAdminAndPage();
+        $this->createGalleryMedia($page, 1);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
+        $response->assertSee('width:64px', false);
+        $response->assertSee('height:64px', false);
+        $response->assertSee('max-width:64px', false);
+        $response->assertSee('object-fit:cover', false);
+    }
+
+    public function test_admin_gallery_thumbnail_link_opens_in_new_tab(): void
+    {
+        Storage::fake('public');
+        [$admin, $page] = $this->makeAdminAndPage();
+        $this->createGalleryMedia($page, 1);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
+        $response->assertSee('target="_blank"', false);
+        $response->assertSee('rel="noopener noreferrer"', false);
+    }
+
+    public function test_admin_gallery_filename_is_visible_on_edit_page(): void
+    {
+        Storage::fake('public');
+        [$admin, $page] = $this->makeAdminAndPage();
+        $this->createGalleryMedia($page, 1);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
+        $response->assertSee('img0.jpg');
+    }
+
+    public function test_admin_gallery_delete_button_shows_loeschen_text(): void
+    {
+        Storage::fake('public');
+        [$admin, $page] = $this->makeAdminAndPage();
+        $this->createGalleryMedia($page, 1);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
+        $response->assertSee('Löschen');
+    }
+
     // --- public page test ---
 
     public function test_uploaded_admin_gallery_image_appears_on_public_memory_page(): void

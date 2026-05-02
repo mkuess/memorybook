@@ -167,14 +167,15 @@
                         <ul class="divide-y divide-gray-100 mb-4">
                             @foreach ($galleryImages as $image)
                                 @php $imageUrl = Storage::disk('public')->url($image->path); @endphp
-                                <li class="flex items-center gap-3 py-2">
+                                <li class="flex items-center gap-3 py-2 min-w-0">
                                     <a href="{{ $imageUrl }}"
                                        target="_blank"
-                                       rel="noopener"
-                                       class="shrink-0">
+                                       rel="noopener noreferrer"
+                                       class="shrink-0 block overflow-hidden rounded"
+                                       style="width:64px;height:64px;min-width:64px;">
                                         <img src="{{ $imageUrl }}"
                                              alt="{{ $image->original_filename }}"
-                                             class="w-14 h-14 object-cover rounded">
+                                             style="width:64px;height:64px;max-width:64px;object-fit:cover;display:block;flex-shrink:0;">
                                     </a>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-gray-800 truncate">{{ $image->original_filename }}</p>
