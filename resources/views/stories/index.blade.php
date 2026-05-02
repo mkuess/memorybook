@@ -37,13 +37,19 @@
                         @foreach ($stories as $story)
                             <li class="p-6">
                                 <div class="flex items-start justify-between gap-4">
-                                    <div>
+                                    <div class="min-w-0">
                                         <p class="font-medium text-gray-900">{{ $story->title }}</p>
                                         <p class="mt-1 text-sm text-gray-600 line-clamp-2">{{ $story->content }}</p>
                                     </div>
-                                    <span class="shrink-0 text-xs px-2 py-0.5 rounded-full {{ $story->is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
-                                        {{ $story->is_published ? 'Veröffentlicht' : 'Entwurf' }}
-                                    </span>
+                                    <div class="shrink-0 flex items-center gap-3">
+                                        <span class="text-xs px-2 py-0.5 rounded-full {{ $story->is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                                            {{ $story->is_published ? 'Veröffentlicht' : 'Entwurf' }}
+                                        </span>
+                                        <a href="{{ route('memory-pages.stories.edit', [$memoryPage, $story]) }}"
+                                           class="text-sm text-indigo-600 hover:text-indigo-800">
+                                            Bearbeiten
+                                        </a>
+                                    </div>
                                 </div>
                             </li>
                         @endforeach

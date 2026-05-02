@@ -48,4 +48,36 @@ class StoryController extends Controller
             ->route('memory-pages.stories.index', $memoryPage)
             ->with('success', 'Erinnerung gespeichert.');
     }
+
+    public function edit(Request $request, MemoryPage $memoryPage, Story $story): View
+    {
+        Gate::allowIf($request->user()->id === $memoryPage->user_id);
+
+        abort_unless($story->memory_page_id === $memoryPage->id, 404);
+
+        return view('stories.edit', compact('memoryPage', 'story'));
+    }
+
+    public function update(Request $request, MemoryPage $memoryPage, Story $story): RedirectResponse
+    {
+        Gate::allowIf($request->user()->id === $memoryPage->user_id);
+
+        abort_unless($story->memory_page_id === $memoryPage->id, 404);
+
+        $validated = $request->validate([
+            'title'        => ['required', 'string', 'max:255'],
+            'content'      => ['required', 'string'],
+            'is_published' => ['boolean'],
+        ]);
+
+        $story->update([
+            'title'        => $validated['title'],
+            'content'      => $validated['content'],
+            'is_published' => $validated['is_published'] ?? false,
+        ]);
+
+        return redirect()
+            ->route('memory-pages.stories.index', $memoryPage)
+            ->with('success', 'Erinnerung aktualisiert.');
+    }
 }

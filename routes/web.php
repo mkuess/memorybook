@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/memory-pages/{memoryPage}/stories', [StoryController::class, 'index'])->name('memory-pages.stories.index');
     Route::get('/memory-pages/{memoryPage}/stories/create', [StoryController::class, 'create'])->name('memory-pages.stories.create');
     Route::post('/memory-pages/{memoryPage}/stories', [StoryController::class, 'store'])->name('memory-pages.stories.store');
+    Route::get('/memory-pages/{memoryPage}/stories/{story}/edit', [StoryController::class, 'edit'])->name('memory-pages.stories.edit');
+    Route::put('/memory-pages/{memoryPage}/stories/{story}', [StoryController::class, 'update'])->name('memory-pages.stories.update');
 });
 
 Route::middleware('auth')->group(function () {
