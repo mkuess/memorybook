@@ -260,6 +260,7 @@ class DashboardTest extends TestCase
     public function test_dashboard_still_shows_qr_code_link(): void
     {
         [$user, $page] = $this->makeUserWithPage();
+        $this->createPaidOrder($user, $page);
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
@@ -272,12 +273,60 @@ class DashboardTest extends TestCase
     public function test_dashboard_shows_qr_code_action_with_svg_icon(): void
     {
         [$user, $page] = $this->makeUserWithPage();
+        $this->createPaidOrder($user, $page);
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
         $response->assertSee('QR-Code');
         $response->assertSee('<svg', false);
+    }
+
+    public function test_dashboard_does_not_show_qr_code_action_when_no_paid_order(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertDontSee(route('memory-pages.qr-code', $page), false);
+        $response->assertDontSee('QR-Code');
+    }
+
+    public function test_dashboard_shows_qr_code_action_when_paid_order_exists(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('QR-Code');
+        $response->assertSee(route('memory-pages.qr-code', $page), false);
+    }
+
+    public function test_dashboard_shows_offline_reason_bestellung_fehlt(): void
+    {
+        [$user] = $this->makeUserWithPage([
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'public',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Bestellung fehlt');
+    }
+
+    public function test_no_broken_qr_code_link_without_paid_order(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertDontSee(route('memory-pages.qr-code', $page), false);
     }
 
     public function test_dashboard_shows_profil_aufrufen_action(): void

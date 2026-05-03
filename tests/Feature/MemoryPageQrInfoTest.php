@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\MemoryPage;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -194,6 +195,21 @@ class MemoryPageQrInfoTest extends TestCase
     {
         $owner = User::factory()->create();
         $page  = $this->makePage($owner);
+
+        Order::create([
+            'user_id'         => $owner->id,
+            'memory_page_id'  => $page->id,
+            'status'          => 'paid',
+            'package'         => 'basic',
+            'billing_name'    => 'Test User',
+            'billing_email'   => $owner->email,
+            'billing_address' => 'Teststr. 1',
+            'billing_city'    => 'Berlin',
+            'billing_postal_code' => '10115',
+            'billing_country' => 'DE',
+            'amount_cents'    => 4900,
+            'currency'        => 'EUR',
+        ]);
 
         $response = $this->actingAs($owner)->get(route('dashboard'));
 
