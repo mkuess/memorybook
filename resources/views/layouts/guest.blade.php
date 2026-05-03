@@ -18,8 +18,12 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
 
             <div class="mb-6">
-                <a href="/" class="text-2xl font-bold tracking-tight text-[#2F2E2A] hover:text-brand-700 transition">
-                    memorybook
+                <a href="/">
+                    <img
+                        src="{{ asset('images/memorybook-logo.png') }}"
+                        alt="memorybook"
+                        class="h-12 w-auto"
+                    >
                 </a>
             </div>
 

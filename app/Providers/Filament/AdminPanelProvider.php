@@ -27,6 +27,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('memorybook')
+            ->brandLogo(asset('images/memorybook-logo.png'))
+            ->brandLogoHeight('2rem')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 // Blue-grey primary: #8FA7B0 at 600, #5F737B at 700
