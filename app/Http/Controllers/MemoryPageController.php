@@ -44,7 +44,9 @@ class MemoryPageController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('memory-pages.edit', compact('memoryPage', 'profilePhoto', 'galleryImages'));
+        $latestOrder = $memoryPage->orders()->latest()->first();
+
+        return view('memory-pages.edit', compact('memoryPage', 'profilePhoto', 'galleryImages', 'latestOrder'));
     }
 
     public function update(Request $request, MemoryPage $memoryPage): RedirectResponse
@@ -81,6 +83,7 @@ class MemoryPageController extends Controller
     public function publish(Request $request, MemoryPage $memoryPage): RedirectResponse
     {
         Gate::allowIf(auth()->id() === $memoryPage->user_id);
+        abort_if(! $memoryPage->canBePublished(), 403);
 
         $memoryPage->update([
             'is_published' => true,
@@ -93,6 +96,7 @@ class MemoryPageController extends Controller
     public function unpublish(MemoryPage $memoryPage): RedirectResponse
     {
         Gate::allowIf(auth()->id() === $memoryPage->user_id);
+        abort_if(! $memoryPage->canBePublished(), 403);
 
         $memoryPage->update([
             'is_published' => false,

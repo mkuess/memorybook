@@ -132,7 +132,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Sichtbarkeit und Veröffentlichung');
+        $response->assertSee('Sichtbarkeit');
         $response->assertSee('Privat');
         $response->assertSee('Nur per Link');
         $response->assertSee('Öffentlich');
@@ -482,6 +482,58 @@ class MemoryPageEditTest extends TestCase
         $response->assertDontSee('Veröffentlichung bestellen');
     }
 
+    public function test_edit_shows_bestellung_eingegangen_when_order_is_requested(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $this->createOrderWithStatus($user, $page, 'requested');
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Bestellung eingegangen');
+        $response->assertDontSee('Veröffentlichung bestellen');
+        $response->assertDontSee('Jetzt veröffentlichen');
+    }
+
+    public function test_edit_shows_bestellung_eingegangen_when_order_is_in_review(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $this->createOrderWithStatus($user, $page, 'in_review');
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Bestellung eingegangen');
+        $response->assertDontSee('Jetzt veröffentlichen');
+    }
+
+    public function test_edit_shows_checkout_cta_when_order_is_cancelled(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $this->createOrderWithStatus($user, $page, 'cancelled');
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Veröffentlichung bestellen');
+        $response->assertSee('storniert');
+    }
+
+    public function test_paid_order_shows_veröffentlichung_verwalten_section(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Veröffentlichung verwalten');
+    }
+
     public function test_publish_button_shown_after_paid_order(): void
     {
         $user = User::factory()->create();
@@ -559,18 +611,24 @@ class MemoryPageEditTest extends TestCase
 
     private function createPaidOrder(User $user, MemoryPage $page): Order
     {
+        return $this->createOrderWithStatus($user, $page, 'paid');
+    }
+
+    private function createOrderWithStatus(User $user, MemoryPage $page, string $status): Order
+    {
         return Order::create([
-            'user_id'             => $user->id,
-            'memory_page_id'      => $page->id,
-            'package'             => 'basic',
-            'status'              => 'paid',
-            'billing_name'        => 'Maria Muster',
-            'billing_email'       => 'maria@example.com',
-            'billing_address'     => 'Musterstraße 1',
-            'billing_postal_code' => '1010',
-            'billing_city'        => 'Wien',
-            'billing_country'     => 'Österreich',
-            'consent_confirmed_at' => now(),
+            'user_id'                                => $user->id,
+            'memory_page_id'                         => $page->id,
+            'package'                                => 'basic',
+            'status'                                 => $status,
+            'billing_name'                           => 'Maria Muster',
+            'billing_email'                          => 'maria@example.com',
+            'billing_address'                        => 'Musterstraße 1',
+            'billing_postal_code'                    => '1010',
+            'billing_city'                           => 'Wien',
+            'billing_country'                        => 'Österreich',
+            'consent_confirmed_at'                   => now(),
+            'publication_authorization_confirmed_at' => now(),
         ]);
     }
 }

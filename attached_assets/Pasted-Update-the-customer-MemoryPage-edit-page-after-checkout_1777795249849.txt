@@ -1,0 +1,77 @@
+Update the customer MemoryPage edit page after checkout/order submission.
+
+Current issue:
+- After the customer completes checkout, the edit page still shows the box:
+  "Bereit zur Veröffentlichung?"
+  "Veröffentlichung bestellen"
+- This is confusing because the customer has already submitted a paid order request.
+
+Desired behavior:
+- The checkout CTA should only appear if there is no existing order for this memory page.
+- After checkout is completed, the page should show the correct next state.
+- When the order is paid/approved, the customer should see publication controls.
+
+Requirements:
+
+Order state handling on customer edit page:
+1. No order exists for this memory page:
+- show the existing CTA box:
+  title: "Bereit zur Veröffentlichung?"
+  text: "Wähle dein Paket und bestelle die Veröffentlichung deiner Erinnerungsseite."
+  button: "Veröffentlichung bestellen"
+
+2. Order exists but status is requested or in_review:
+- hide the checkout CTA box
+- show an info box:
+  title: "Bestellung eingegangen"
+  text: "Deine Bestellung ist eingegangen und wird geprüft. Sobald die Veröffentlichung freigegeben ist, kannst du deine Erinnerungsseite veröffentlichen."
+- do not show publish/unpublish controls yet
+
+3. Order exists and status is paid or approved:
+- hide the checkout CTA box
+- show publication management:
+  title: "Veröffentlichung verwalten"
+  if memoryPage.is_published is false:
+    - show button "Jetzt veröffentlichen"
+  if memoryPage.is_published is true:
+    - show button "Nicht mehr veröffentlichen"
+- keep any required customer-side publish route/action secure
+- do not require the authorization checkbox here anymore; it was already confirmed during checkout
+
+4. Order exists and status is cancelled:
+- show the checkout CTA again or show a calm message with a new order option:
+  "Die letzte Bestellung wurde storniert. Du kannst eine neue Veröffentlichung bestellen."
+
+Technical:
+- use the existing Order model/table/statuses from the checkout flow
+- if the project currently uses status "paid", use paid
+- if it uses "approved", use approved
+- if only one exists, use that one consistently
+- do not automatically mark orders as paid
+- do not publish the page automatically after checkout
+- admin still controls order status in the admin area
+- admin lock/is_locked remains separate and should not be shown as customer control
+
+Do not change:
+- database fields unless strictly necessary
+- admin lock behavior
+- public /m/{code} availability rules except keeping existing behavior
+- gallery/story/profile photo behavior
+- checkout form fields except where needed for status detection
+
+Tests:
+- customer edit page shows checkout CTA when no order exists
+- after submitting checkout, customer edit page hides checkout CTA
+- after submitting checkout with status requested, customer edit page shows "Bestellung eingegangen"
+- requested/in_review order does not show publish button
+- paid/approved order shows "Veröffentlichung verwalten"
+- paid/approved order with unpublished page shows "Jetzt veröffentlichen"
+- paid/approved order with published page shows "Nicht mehr veröffentlichen"
+- customer can publish only when a paid/approved order exists
+- customer cannot publish when no order exists
+- customer cannot publish when order is only requested/in_review
+- non-owner cannot access or modify publication controls
+
+Run:
+- php artisan test
+- show changed files and test results

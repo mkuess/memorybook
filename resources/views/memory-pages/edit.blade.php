@@ -208,19 +208,18 @@
                 </div>
             </div>
 
-            {{-- 4. Sichtbarkeit und Veröffentlichung --}}
+            {{-- 4. Sichtbarkeit --}}
             <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-base font-semibold text-[#2F2E2A] mb-4">Sichtbarkeit und Veröffentlichung</h3>
+                    <h3 class="text-base font-semibold text-[#2F2E2A] mb-4">Sichtbarkeit</h3>
 
-                    {{-- Visibility --}}
                     @if (session('visibility_success'))
                         <p class="text-sm text-[#6F7F68] mb-4">{{ session('visibility_success') }}</p>
                     @endif
 
                     <form method="POST"
                           action="{{ route('memory-pages.update-visibility', $memoryPage) }}"
-                          class="mb-6">
+                          class="mb-2">
                         @csrf
                         @method('PUT')
 
@@ -250,11 +249,19 @@
                             Sichtbarkeit speichern
                         </button>
                     </form>
+                </div>
+            </div>
 
-                    @if ($memoryPage->canBePublished())
-                        <hr class="border-[#DDD6CA] mb-6">
+            {{-- 5. Veröffentlichung — four-state block --}}
+            @php $orderStatus = $latestOrder?->status; @endphp
 
-                        {{-- Publish / Unpublish --}}
+            @if ($orderStatus === 'paid')
+
+                {{-- State: paid → show publication controls --}}
+                <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-4">Veröffentlichung verwalten</h3>
+
                         @if ($memoryPage->is_published)
                             <p class="text-sm text-[#6F7F68] mb-4">
                                 Diese Seite ist veröffentlicht.
@@ -278,28 +285,66 @@
                                 </button>
                             </form>
                         @endif
-                    @endif
-
-                </div>
-            </div>
-
-            {{-- Checkout CTA — only shown before a paid order exists --}}
-            @if (! $memoryPage->canBePublished())
-            <div class="bg-white border border-brand-600 sm:rounded-lg">
-                <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <p class="font-semibold text-[#2F2E2A] text-sm">Bereit zur Veröffentlichung?</p>
-                        <p class="text-xs text-[#706B62] mt-0.5">Wähle dein Paket und bestelle die Veröffentlichung deiner Erinnerungsseite.</p>
                     </div>
-                    <a href="{{ route('memory-pages.checkout', $memoryPage) }}"
-                       class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 border border-transparent rounded font-semibold text-sm text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.83-7.08a60.026 60.026 0 0 0-17.5 0A12.65 12.65 0 0 0 7.5 14.25Z" />
-                        </svg>
-                        Veröffentlichung bestellen
-                    </a>
                 </div>
-            </div>
+
+            @elseif ($orderStatus === 'requested' || $orderStatus === 'in_review')
+
+                {{-- State: order pending review --}}
+                <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
+                    <div class="p-6 flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-full bg-[#EEF0E9] flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#6F7F68]" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-[#2F2E2A] text-sm">Bestellung eingegangen</p>
+                            <p class="text-xs text-[#706B62] mt-1 leading-relaxed">
+                                Deine Bestellung ist eingegangen und wird geprüft. Sobald die Veröffentlichung freigegeben ist, kannst du deine Erinnerungsseite veröffentlichen.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            @elseif ($orderStatus === 'cancelled')
+
+                {{-- State: cancelled → offer re-order --}}
+                <div class="bg-white border border-brand-600 sm:rounded-lg">
+                    <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <p class="font-semibold text-[#2F2E2A] text-sm">Bestellung storniert</p>
+                            <p class="text-xs text-[#706B62] mt-0.5">Die letzte Bestellung wurde storniert. Du kannst eine neue Veröffentlichung bestellen.</p>
+                        </div>
+                        <a href="{{ route('memory-pages.checkout', $memoryPage) }}"
+                           class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 border border-transparent rounded font-semibold text-sm text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.83-7.08a60.026 60.026 0 0 0-17.5 0A12.65 12.65 0 0 0 7.5 14.25Z" />
+                            </svg>
+                            Veröffentlichung bestellen
+                        </a>
+                    </div>
+                </div>
+
+            @else
+
+                {{-- State: no order yet --}}
+                <div class="bg-white border border-brand-600 sm:rounded-lg">
+                    <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <p class="font-semibold text-[#2F2E2A] text-sm">Bereit zur Veröffentlichung?</p>
+                            <p class="text-xs text-[#706B62] mt-0.5">Wähle dein Paket und bestelle die Veröffentlichung deiner Erinnerungsseite.</p>
+                        </div>
+                        <a href="{{ route('memory-pages.checkout', $memoryPage) }}"
+                           class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 border border-transparent rounded font-semibold text-sm text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.83-7.08a60.026 60.026 0 0 0-17.5 0A12.65 12.65 0 0 0 7.5 14.25Z" />
+                            </svg>
+                            Veröffentlichung bestellen
+                        </a>
+                    </div>
+                </div>
+
             @endif
 
             {{-- 5. Links / nächste Schritte --}}
