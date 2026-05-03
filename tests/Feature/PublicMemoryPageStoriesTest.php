@@ -178,6 +178,111 @@ class PublicMemoryPageStoriesTest extends TestCase
         $response->assertSee('Erinnerung hinterlassen');
     }
 
+    // --- erinnerung image display ---
+
+    public function test_erinnerung_image_is_rendered_on_public_page(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'      => $page->user_id,
+            'title'        => 'Mit Bild',
+            'content'      => 'Schöne Erinnerung.',
+            'image_path'   => 'story-images/portrait.jpg',
+            'is_published' => true,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertSee('story-images/portrait.jpg', false);
+    }
+
+    public function test_erinnerung_image_uses_object_contain(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'      => $page->user_id,
+            'title'        => 'Mit Bild',
+            'content'      => 'Schöne Erinnerung.',
+            'image_path'   => 'story-images/portrait.jpg',
+            'is_published' => true,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertSee('object-contain', false);
+    }
+
+    public function test_erinnerung_image_does_not_use_object_cover(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'      => $page->user_id,
+            'title'        => 'Mit Bild',
+            'content'      => 'Schöne Erinnerung.',
+            'image_path'   => 'story-images/portrait.jpg',
+            'is_published' => true,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $html = $response->getContent();
+        // Find the story image tag and verify it doesn't use object-cover
+        $imgPos = strpos($html, 'story-images/portrait.jpg');
+        $this->assertNotFalse($imgPos);
+        $imgTagStart = strrpos(substr($html, 0, $imgPos), '<img');
+        $imgTagEnd   = strpos($html, '>', $imgTagStart);
+        $imgTag      = substr($html, $imgTagStart, $imgTagEnd - $imgTagStart + 1);
+        $this->assertStringNotContainsString('object-cover', $imgTag);
+    }
+
+    public function test_erinnerung_text_still_renders_with_image(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'      => $page->user_id,
+            'title'        => 'Mit Bild',
+            'content'      => 'Text bleibt sichtbar.',
+            'image_path'   => 'story-images/portrait.jpg',
+            'is_published' => true,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertSee('Text bleibt sichtbar.');
+    }
+
+    public function test_gallery_images_still_use_object_cover(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $page = $this->makeVisiblePage();
+
+        \App\Models\Media::create([
+            'memory_page_id'    => $page->id,
+            'collection'        => 'gallery',
+            'filename'          => 'gallery0.jpg',
+            'original_filename' => 'gallery0.jpg',
+            'path'              => "memory-pages/{$page->id}/gallery/gallery0.jpg",
+            'mime_type'         => 'image/jpeg',
+            'size_bytes'        => 10000,
+            'sort_order'        => 0,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $html       = $response->getContent();
+        $galleryPos = strpos($html, "memory-pages/{$page->id}/gallery/gallery0.jpg");
+        $this->assertNotFalse($galleryPos);
+        $imgStart = strrpos(substr($html, 0, $galleryPos), '<img');
+        $imgEnd   = strpos($html, '>', $imgStart);
+        $imgTag   = substr($html, $imgStart, $imgEnd - $imgStart + 1);
+        $this->assertStringContainsString('object-cover', $imgTag);
+    }
+
     // --- confirmed visitor memories ---
 
     public function test_public_page_shows_confirmed_visitor_memory(): void

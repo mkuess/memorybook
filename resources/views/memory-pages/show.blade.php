@@ -93,10 +93,10 @@
                     @foreach ($stories as $story)
                         <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8">
                             @if ($story->image_path)
-                                <div class="mb-4">
+                                <div class="mb-4 flex justify-center">
                                     <img src="{{ Storage::disk('public')->url($story->image_path) }}"
                                          alt=""
-                                         class="w-full rounded-lg object-cover max-h-64">
+                                         class="w-full rounded-lg object-contain max-h-[520px]">
                                 </div>
                             @endif
                             <div class="text-gray-700 leading-relaxed text-sm sm:text-base">
