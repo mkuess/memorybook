@@ -191,6 +191,70 @@ class MemoryPageQrInfoTest extends TestCase
         $response->assertForbidden();
     }
 
+    // --- visibility privacy warning ---
+
+    public function test_qr_code_page_shows_private_warning_when_visibility_is_private(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+        $page->update(['visibility' => 'private']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertSee('Profilseite ist privat');
+    }
+
+    public function test_qr_code_page_shows_explanatory_warning_text_when_private(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+        $page->update(['visibility' => 'private']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertSee('Diese Profilseite ist derzeit nicht öffentlich aufrufbar, weil die Sichtbarkeit auf Privat gestellt ist.');
+        $response->assertSee('damit der QR-Code für Besucher funktioniert.');
+    }
+
+    public function test_qr_code_page_does_not_show_private_warning_when_visibility_is_link(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+        $page->update(['visibility' => 'link']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('Profilseite ist privat');
+    }
+
+    public function test_qr_code_page_does_not_show_private_warning_when_visibility_is_public(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+        $page->update(['visibility' => 'public']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('Profilseite ist privat');
+    }
+
+    public function test_qr_code_still_renders_for_owner_when_visibility_is_private(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+        $page->update(['visibility' => 'private']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertSee('QR-Code');
+        $response->assertSee($page->person_name);
+    }
+
     public function test_dashboard_links_to_qr_code_page(): void
     {
         $owner = User::factory()->create();

@@ -10,6 +10,15 @@
             <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
                 <div class="p-8 flex flex-col items-center gap-6">
 
+                    {{-- Privacy warning --}}
+                    @if ($memoryPage->visibility === 'private')
+                        <div class="w-full rounded-md border border-[#E8C87A] bg-[#FEF9EE] px-4 py-3 text-sm text-[#7A5C1E]">
+                            <p class="font-semibold">Profilseite ist privat</p>
+                            <p class="mt-1">Diese Profilseite ist derzeit nicht öffentlich aufrufbar, weil die Sichtbarkeit auf Privat gestellt ist.</p>
+                            <p class="mt-1">Ändere die Sichtbarkeit auf „Nur per Link" oder „Öffentlich", damit der QR-Code für Besucher funktioniert.</p>
+                        </div>
+                    @endif
+
                     {{-- QR code image --}}
                     @if ($qr->png_path && Storage::disk('public')->exists($qr->png_path))
                         <img
