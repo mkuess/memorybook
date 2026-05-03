@@ -150,17 +150,17 @@ class PublicMemoryPageStoriesTest extends TestCase
         $response->assertSee('Erinnerung hinterlassen');
     }
 
-    public function test_public_page_does_not_show_button_when_no_paid_order(): void
+    public function test_public_page_shows_button_even_without_paid_order(): void
     {
         $page = $this->makeVisiblePage();
 
         $response = $this->get("/m/{$page->qrCode->short_code}");
 
         $response->assertOk();
-        $response->assertDontSee('Erinnerung hinterlassen');
+        $response->assertSee('Erinnerung hinterlassen');
     }
 
-    public function test_public_page_does_not_show_button_on_private_page(): void
+    public function test_owner_preview_of_private_page_shows_button(): void
     {
         $user = User::factory()->create();
         $page = MemoryPage::create([
@@ -175,7 +175,7 @@ class PublicMemoryPageStoriesTest extends TestCase
         $response = $this->actingAs($user)->get("/m/{$page->qrCode->short_code}");
 
         $response->assertOk();
-        $response->assertDontSee('Erinnerung hinterlassen');
+        $response->assertSee('Erinnerung hinterlassen');
     }
 
     // --- confirmed visitor memories ---

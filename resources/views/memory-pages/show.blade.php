@@ -57,12 +57,10 @@
                             class="inline-flex items-center px-5 py-2 bg-brand-700 text-white text-sm font-medium rounded hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
                         Profil teilen
                     </button>
-                    @if ($canLeaveMemory ?? false)
-                        <a href="{{ route('visitor-memory.create', $shortCode) }}"
-                           class="inline-flex items-center px-5 py-2 bg-[#EFEAE1] border border-[#DDD6CA] text-[#2F2E2A] text-sm font-medium rounded hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Erinnerung hinterlassen
-                        </a>
-                    @endif
+                    <a href="{{ route('visitor-memory.create', $shortCode) }}"
+                       class="inline-flex items-center px-5 py-2 bg-[#EFEAE1] border border-[#DDD6CA] text-[#2F2E2A] text-sm font-medium rounded hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
+                        Erinnerung hinterlassen
+                    </a>
                 </div>
                 <p id="share-msg" class="text-xs text-gray-500 min-h-[1rem] text-center mt-1"></p>
 

@@ -323,6 +323,70 @@ class PublicMemoryPageLayoutTest extends TestCase
         $response->assertDontSee('Profil teilen');
     }
 
+    // --- erinnerung hinterlassen button ---
+
+    public function test_public_active_profile_shows_erinnerung_hinterlassen(): void
+    {
+        $page = $this->makeVisiblePage();
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee('Erinnerung hinterlassen');
+    }
+
+    public function test_button_links_to_erinnerung_hinterlassen_route(): void
+    {
+        $page = $this->makeVisiblePage();
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee("/m/{$code}/erinnerung-hinterlassen", false);
+    }
+
+    public function test_owner_preview_shows_erinnerung_hinterlassen(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->makeVisiblePage([
+            'is_published' => false,
+            'visibility'   => 'private',
+        ]);
+        $page->update(['user_id' => $user->id]);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->actingAs($user)->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee('Erinnerung hinterlassen');
+    }
+
+    public function test_admin_preview_shows_erinnerung_hinterlassen(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeVisiblePage(['is_published' => false]);
+        $code  = $page->qrCode->short_code;
+
+        $response = $this->actingAs($admin)->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee('Erinnerung hinterlassen');
+    }
+
+    public function test_unavailable_page_does_not_show_erinnerung_hinterlassen(): void
+    {
+        $page = $this->makeVisiblePage(['visibility' => 'private']);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee(self::UNAVAILABLE);
+        $response->assertDontSee('Erinnerung hinterlassen');
+    }
+
     public function test_public_page_still_shows_profile_photo_short_bio_gallery_and_stories(): void
     {
         Storage::fake('public');

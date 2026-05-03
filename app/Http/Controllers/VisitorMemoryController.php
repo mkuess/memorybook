@@ -98,6 +98,14 @@ class VisitorMemoryController extends Controller
 
         $page = $qr->memoryPage;
 
+        $user    = auth()->user();
+        $isOwner = $user && $user->id === $page->user_id;
+        $isAdmin = $user && method_exists($user, 'isAdmin') && $user->isAdmin();
+
+        if ($isOwner || $isAdmin) {
+            return $page;
+        }
+
         $isVisible = $page->is_published
             && ! $page->is_locked
             && in_array($page->visibility, ['link', 'public'], true);

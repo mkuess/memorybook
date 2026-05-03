@@ -371,4 +371,73 @@ class VisitorMemoryTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('private@example.com');
     }
+
+    // --- owner and admin can access form regardless of eligibility ---
+
+    public function test_owner_can_access_form_for_their_own_unpublished_page(): void
+    {
+        $user = User::factory()->create();
+        $page = MemoryPage::create([
+            'user_id'      => $user->id,
+            'slug'         => substr(md5(uniqid()), 0, 8),
+            'person_name'  => 'Max',
+            'is_published' => false,
+            'is_locked'    => false,
+            'visibility'   => 'private',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('visitor-memory.create', $page->qrCode->short_code));
+
+        $response->assertOk();
+    }
+
+    public function test_owner_can_access_form_for_their_own_private_page(): void
+    {
+        $user = User::factory()->create();
+        $page = MemoryPage::create([
+            'user_id'      => $user->id,
+            'slug'         => substr(md5(uniqid()), 0, 8),
+            'person_name'  => 'Max',
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'private',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('visitor-memory.create', $page->qrCode->short_code));
+
+        $response->assertOk();
+    }
+
+    public function test_admin_can_access_form_for_any_page(): void
+    {
+        $owner = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = MemoryPage::create([
+            'user_id'      => $owner->id,
+            'slug'         => substr(md5(uniqid()), 0, 8),
+            'person_name'  => 'Max',
+            'is_published' => false,
+            'is_locked'    => false,
+            'visibility'   => 'private',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('visitor-memory.create', $page->qrCode->short_code));
+
+        $response->assertOk();
+    }
+
+    public function test_visitor_form_still_protected_for_ineligible_public_visitor(): void
+    {
+        [,, $code] = $this->makeEligiblePage();
+
+        $page = \App\Models\QrCode::where('short_code', $code)->first()->memoryPage;
+        $page->update(['is_published' => false]);
+
+        $response = $this->get(route('visitor-memory.create', $code));
+
+        $response->assertForbidden();
+    }
 }
