@@ -128,7 +128,7 @@
 
                         <button type="submit"
                             class="inline-flex items-center px-4 py-2 bg-brand-600 border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-brand-700 focus:bg-brand-700 active:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Änderungen speichern
+                            Daten speichern
                         </button>
 
                     </form>
@@ -251,59 +251,45 @@
                         </button>
                     </form>
 
-                    <hr class="border-[#DDD6CA] mb-6">
+                    @if ($memoryPage->canBePublished())
+                        <hr class="border-[#DDD6CA] mb-6">
 
-                    {{-- Publish / Unpublish --}}
-                    @if ($memoryPage->is_published)
-                        <p class="text-sm text-[#6F7F68] mb-4">
-                            Diese Seite ist veröffentlicht.
-                            @if ($memoryPage->published_at)
-                                <span class="text-[#706B62]">({{ $memoryPage->published_at->format('d.m.Y H:i') }})</span>
-                            @endif
-                        </p>
-                        <form method="POST" action="{{ route('memory-pages.unpublish', $memoryPage) }}">
-                            @csrf
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-[#9A4F3F] border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#7E3F31] focus:outline-none focus:ring-2 focus:ring-[#9A4F3F] focus:ring-offset-2 transition ease-in-out duration-150">
-                                Nicht mehr veröffentlichen
-                            </button>
-                        </form>
-                    @else
-                        <form method="POST" action="{{ route('memory-pages.publish', $memoryPage) }}">
-                            @csrf
-                            <div class="mb-4">
-                                <label class="flex items-start gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        name="consent"
-                                        value="1"
-                                        {{ old('consent') ? 'checked' : '' }}
-                                        class="mt-0.5 text-brand-600 border-[#DDD6CA] rounded focus:ring-brand-600 @error('consent') border-[#9A4F3F] @enderror"
-                                    >
-                                    <span class="text-sm text-[#2F2E2A]">
-                                        Ich bestätige, dass ich berechtigt bin, diese Erinnerungsseite zu veröffentlichen.
-                                    </span>
-                                </label>
-                                @error('consent')
-                                    <p class="mt-1 text-sm text-[#9A4F3F]">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-[#6F7F68] border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#5A6A54] focus:outline-none focus:ring-2 focus:ring-[#6F7F68] focus:ring-offset-2 transition ease-in-out duration-150">
-                                Veröffentlichen
-                            </button>
-                        </form>
+                        {{-- Publish / Unpublish --}}
+                        @if ($memoryPage->is_published)
+                            <p class="text-sm text-[#6F7F68] mb-4">
+                                Diese Seite ist veröffentlicht.
+                                @if ($memoryPage->published_at)
+                                    <span class="text-[#706B62]">({{ $memoryPage->published_at->format('d.m.Y H:i') }})</span>
+                                @endif
+                            </p>
+                            <form method="POST" action="{{ route('memory-pages.unpublish', $memoryPage) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center px-4 py-2 bg-[#9A4F3F] border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#7E3F31] focus:outline-none focus:ring-2 focus:ring-[#9A4F3F] focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Nicht mehr veröffentlichen
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('memory-pages.publish', $memoryPage) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center px-4 py-2 bg-[#6F7F68] border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#5A6A54] focus:outline-none focus:ring-2 focus:ring-[#6F7F68] focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Jetzt veröffentlichen
+                                </button>
+                            </form>
+                        @endif
                     @endif
 
                 </div>
             </div>
 
-            {{-- Checkout CTA --}}
+            {{-- Checkout CTA — only shown before a paid order exists --}}
+            @if (! $memoryPage->canBePublished())
             <div class="bg-white border border-brand-600 sm:rounded-lg">
                 <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <p class="font-semibold text-[#2F2E2A] text-sm">Bereit zur Veröffentlichung?</p>
-                        <p class="text-xs text-[#706B62] mt-0.5">Paket wählen und Erinnerungsseite bestellen.</p>
+                        <p class="text-xs text-[#706B62] mt-0.5">Wähle dein Paket und bestelle die Veröffentlichung deiner Erinnerungsseite.</p>
                     </div>
                     <a href="{{ route('memory-pages.checkout', $memoryPage) }}"
                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 border border-transparent rounded font-semibold text-sm text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap">
@@ -314,6 +300,7 @@
                     </a>
                 </div>
             </div>
+            @endif
 
             {{-- 5. Links / nächste Schritte --}}
             <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">

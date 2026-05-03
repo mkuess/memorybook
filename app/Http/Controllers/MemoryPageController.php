@@ -82,14 +82,9 @@ class MemoryPageController extends Controller
     {
         Gate::allowIf(auth()->id() === $memoryPage->user_id);
 
-        $request->validate([
-            'consent' => ['accepted'],
-        ]);
-
         $memoryPage->update([
-            'is_published'         => true,
-            'consent_confirmed_at' => $memoryPage->consent_confirmed_at ?? now(),
-            'published_at'         => now(),
+            'is_published' => true,
+            'published_at' => now(),
         ]);
 
         return redirect()->route('memory-pages.edit', $memoryPage);

@@ -1,0 +1,60 @@
+Adjust the customer checkout form and move the publication authorization checkbox from edit page to checkout.
+
+Current situation:
+- On the customer MemoryPage edit page there is a checkbox:
+  "Ich bestätige, dass ich berechtigt bin, diese Erinnerungsseite zu veröffentlichen."
+- This belongs better to the checkout/order flow.
+- Checkout currently asks for billing/contact data.
+
+Requirements:
+
+1. Customer checkout prefill:
+- On /memory-pages/{memoryPage}/checkout:
+  - prefill billing_name with the authenticated user's name
+  - prefill billing_email with the authenticated user's email
+- User may still edit these fields if needed.
+- Keep validation unchanged or stricter if appropriate.
+
+2. Move authorization checkbox:
+- Remove the checkbox from the MemoryPage edit page:
+  "Ich bestätige, dass ich berechtigt bin, diese Erinnerungsseite zu veröffentlichen."
+- Add this checkbox to the checkout form instead.
+- Checkbox label:
+  "Ich bestätige, dass ich berechtigt bin, diese Erinnerungsseite zu veröffentlichen."
+- Checkbox must be required before submitting checkout.
+- Store confirmation timestamp if a suitable field exists.
+- If no suitable field exists, add a clearly named field to the order table, for example:
+  publication_authorization_confirmed_at
+- Do not store this on the memory page unless already implemented that way and clearly better.
+
+3. Checkout legal checkbox:
+- Keep the existing required checkbox:
+  "Ich bestelle zahlungspflichtig."
+- Both checkboxes must be required:
+  - publication authorization
+  - paid order confirmation
+
+4. Edit page behavior:
+- The MemoryPage edit page should only save profile/content data.
+- It should not ask for publication authorization anymore.
+- It should still show the checkout CTA:
+  "Veröffentlichung bestellen"
+
+5. Publishing behavior:
+- Do not allow direct publishing before approved/paid order.
+- Keep publish/unpublish controls hidden until the page is eligible for publication.
+- Do not change admin lock behavior.
+
+6. Tests:
+- checkout page pre-fills name and email from authenticated user
+- checkout requires publication authorization checkbox
+- checkout requires "Ich bestelle zahlungspflichtig" checkbox
+- order stores publication authorization confirmation timestamp
+- edit page no longer shows the publication authorization checkbox
+- edit page still saves profile data
+- checkout submission still creates an order
+- non-owner cannot access checkout
+
+Run:
+- php artisan test
+- show changed files and test results

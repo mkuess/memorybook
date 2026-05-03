@@ -92,6 +92,11 @@ class MemoryPage extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function canBePublished(): bool
+    {
+        return $this->orders()->where('status', 'paid')->exists();
+    }
+
     public function plaqueOrders(): HasMany
     {
         return $this->hasMany(PlaqueOrder::class);

@@ -1,0 +1,47 @@
+Adjust the customer MemoryPage edit flow to match the new checkout-based publishing logic.
+
+Goal:
+The customer should not be able to publish a memory page directly from the edit page before checkout/payment approval.
+
+Required behavior:
+
+1. On the customer MemoryPage edit page:
+- replace the current green "Veröffentlichen" button with a neutral primary button:
+  "Daten speichern"
+- this button should only save the entered profile data
+
+2. Publishing logic:
+- do NOT show "Veröffentlichen" or "Nicht mehr veröffentlichen" before checkout/payment approval
+- the memory page should only become publishable after the required checkout/order has been completed and approved/paid
+- before that, the edit page must only show a checkout call-to-action
+
+3. Add or keep a separate box on the edit page:
+- title: "Bereit zur Veröffentlichung?"
+- text: "Wähle dein Paket und bestelle die Veröffentlichung deiner Erinnerungsseite."
+- button: "Veröffentlichung bestellen"
+- this button links to the checkout/order page for this memory page
+
+4. Visibility of publish/unpublish controls:
+- if the memory page is NOT yet eligible for publication (no approved/paid order), hide publish/unpublish controls completely
+- if the memory page IS eligible for publication, then show:
+  - "Jetzt veröffentlichen" if currently not published
+  - "Nicht mehr veröffentlichen" if currently published
+
+5. Keep admin lock separate:
+- "Gesperrt" / "Blockiert" is an admin-only state and must stay logically separate from publication/payment state
+- do not treat "not paid yet" as "blocked"
+
+6. UI texts should be German.
+
+7. If needed, introduce a clear helper condition such as:
+- memory page can be published only if there is an associated order with status paid/approved
+Use the simplest clean implementation already fitting the current project structure.
+
+8. Update tests:
+- customer edit page shows "Daten speichern"
+- publish button is hidden before paid/approved order
+- checkout CTA is shown before paid/approved order
+- publish/unpublish buttons appear only after paid/approved order
+- saving profile data still works normally
+
+Run tests and show changed files.

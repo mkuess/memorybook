@@ -35,6 +35,7 @@ class CheckoutTest extends TestCase
             'billing_postal_code' => '1010',
             'billing_city'        => 'Wien',
             'billing_country'     => 'Österreich',
+            'pub_auth'            => '1',
             'consent'             => '1',
         ], $overrides);
     }
@@ -212,6 +213,50 @@ class CheckoutTest extends TestCase
         $order = Order::first();
         $this->assertNotNull($order);
         $this->assertSame('requested', $order->status);
+    }
+
+    public function test_checkout_page_prefills_billing_name_from_user(): void
+    {
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $owner->update(['name' => 'Prefill Name']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.checkout', $page));
+
+        $response->assertOk();
+        $response->assertSee('Prefill Name');
+    }
+
+    public function test_checkout_page_prefills_billing_email_from_user(): void
+    {
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $owner->update(['email' => 'prefill@example.com']);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.checkout', $page));
+
+        $response->assertOk();
+        $response->assertSee('prefill@example.com');
+    }
+
+    public function test_checkout_requires_publication_authorization_checkbox(): void
+    {
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $response = $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload(['pub_auth' => '0']));
+
+        $response->assertSessionHasErrors('pub_auth');
+    }
+
+    public function test_order_stores_publication_authorization_timestamp(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $order = \App\Models\Order::first();
+        $this->assertNotNull($order?->publication_authorization_confirmed_at);
     }
 
     public function test_created_order_stores_consent_timestamp(): void

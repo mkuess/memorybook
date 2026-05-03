@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Media;
 use App\Models\MemoryPage;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -408,7 +409,44 @@ class MemoryPageEditTest extends TestCase
 
     // --- publish labels ---
 
-    public function test_unpublished_page_shows_veröffentlichen_button(): void
+    public function test_unpublished_page_with_paid_order_shows_jetzt_veröffentlichen_button(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user, ['is_published' => false]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Jetzt veröffentlichen');
+    }
+
+    public function test_published_page_with_paid_order_shows_nicht_mehr_veröffentlichen_button(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user, ['is_published' => true]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Nicht mehr veröffentlichen');
+    }
+
+    // --- new publish/checkout visibility rules ---
+
+    public function test_edit_page_shows_daten_speichern_button(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Daten speichern');
+    }
+
+    public function test_publish_button_hidden_before_paid_order(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user, ['is_published' => false]);
@@ -416,17 +454,123 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Veröffentlichen');
+        $response->assertDontSee('Jetzt veröffentlichen');
+        $response->assertDontSee('Nicht mehr veröffentlichen');
     }
 
-    public function test_published_page_shows_nicht_mehr_veröffentlichen_button(): void
+    public function test_checkout_cta_shown_before_paid_order(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Veröffentlichung bestellen');
+        $response->assertSee(route('memory-pages.checkout', $page), false);
+    }
+
+    public function test_checkout_cta_hidden_after_paid_order(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('Veröffentlichung bestellen');
+    }
+
+    public function test_publish_button_shown_after_paid_order(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user, ['is_published' => false]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Jetzt veröffentlichen');
+    }
+
+    public function test_unpublish_button_shown_after_paid_order_when_published(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user, ['is_published' => true]);
+        $this->createPaidOrder($user, $page);
 
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
         $response->assertSee('Nicht mehr veröffentlichen');
+    }
+
+    public function test_requested_order_does_not_unlock_publish_button(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        Order::create([
+            'user_id'             => $user->id,
+            'memory_page_id'      => $page->id,
+            'package'             => 'basic',
+            'status'              => 'requested',
+            'billing_name'        => 'Maria Muster',
+            'billing_email'       => 'maria@example.com',
+            'billing_address'     => 'Musterstraße 1',
+            'billing_postal_code' => '1010',
+            'billing_city'        => 'Wien',
+            'billing_country'     => 'Österreich',
+            'consent_confirmed_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('Jetzt veröffentlichen');
+    }
+
+    public function test_edit_page_does_not_show_publication_authorization_checkbox(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('Ich bestätige, dass ich berechtigt bin, diese Erinnerungsseite zu veröffentlichen.');
+    }
+
+    public function test_saving_profile_data_still_works_normally(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user, ['person_name' => 'Alt']);
+
+        $response = $this->actingAs($user)->put(route('memory-pages.update', $page), [
+            'person_name' => 'Neu',
+        ]);
+
+        $response->assertRedirect(route('memory-pages.edit', $page));
+        $this->assertSame('Neu', $page->fresh()->person_name);
+    }
+
+    // --- helpers ---
+
+    private function createPaidOrder(User $user, MemoryPage $page): Order
+    {
+        return Order::create([
+            'user_id'             => $user->id,
+            'memory_page_id'      => $page->id,
+            'package'             => 'basic',
+            'status'              => 'paid',
+            'billing_name'        => 'Maria Muster',
+            'billing_email'       => 'maria@example.com',
+            'billing_address'     => 'Musterstraße 1',
+            'billing_postal_code' => '1010',
+            'billing_city'        => 'Wien',
+            'billing_country'     => 'Österreich',
+            'consent_confirmed_at' => now(),
+        ]);
     }
 }

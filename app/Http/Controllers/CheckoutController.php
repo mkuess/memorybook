@@ -18,7 +18,9 @@ class CheckoutController extends Controller
     {
         Gate::allowIf($request->user()->id === $memoryPage->user_id);
 
-        return view('checkout.create', compact('memoryPage'));
+        $user = $request->user();
+
+        return view('checkout.create', compact('memoryPage', 'user'));
     }
 
     public function store(Request $request, MemoryPage $memoryPage): RedirectResponse
@@ -33,20 +35,22 @@ class CheckoutController extends Controller
             'billing_postal_code' => ['required', 'string', 'max:20'],
             'billing_city'        => ['required', 'string', 'max:255'],
             'billing_country'     => ['required', 'string', 'max:255'],
+            'pub_auth'            => ['accepted'],
             'consent'             => ['accepted'],
         ]);
 
         $order = Order::create([
-            'user_id'             => $request->user()->id,
-            'memory_page_id'      => $memoryPage->id,
-            'package'             => $validated['package'],
-            'billing_name'        => $validated['billing_name'],
-            'billing_email'       => $validated['billing_email'],
-            'billing_address'     => $validated['billing_address'],
-            'billing_postal_code' => $validated['billing_postal_code'],
-            'billing_city'        => $validated['billing_city'],
-            'billing_country'     => $validated['billing_country'],
-            'consent_confirmed_at' => now(),
+            'user_id'                                => $request->user()->id,
+            'memory_page_id'                         => $memoryPage->id,
+            'package'                                => $validated['package'],
+            'billing_name'                           => $validated['billing_name'],
+            'billing_email'                          => $validated['billing_email'],
+            'billing_address'                        => $validated['billing_address'],
+            'billing_postal_code'                    => $validated['billing_postal_code'],
+            'billing_city'                           => $validated['billing_city'],
+            'billing_country'                        => $validated['billing_country'],
+            'consent_confirmed_at'                   => now(),
+            'publication_authorization_confirmed_at' => now(),
         ]);
 
         $this->notifyAdmin($order);

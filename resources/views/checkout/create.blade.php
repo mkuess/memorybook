@@ -55,7 +55,7 @@
                                 <x-input-label for="billing_name" value="Name *" />
                                 <x-text-input id="billing_name" name="billing_name" type="text"
                                               class="block mt-1 w-full"
-                                              :value="old('billing_name')" required />
+                                              :value="old('billing_name', $user->name)" required />
                                 <x-input-error :messages="$errors->get('billing_name')" class="mt-1" />
                             </div>
 
@@ -63,7 +63,7 @@
                                 <x-input-label for="billing_email" value="E-Mail-Adresse *" />
                                 <x-text-input id="billing_email" name="billing_email" type="email"
                                               class="block mt-1 w-full"
-                                              :value="old('billing_email')" required />
+                                              :value="old('billing_email', $user->email)" required />
                                 <x-input-error :messages="$errors->get('billing_email')" class="mt-1" />
                             </div>
 
@@ -103,23 +103,38 @@
                     </div>
                 </div>
 
-                {{-- 3. Rechtlicher Hinweis --}}
+                {{-- 3. Bestätigung --}}
                 <div class="bg-white border border-[#DDD6CA] sm:rounded-lg mb-6">
                     <div class="p-6">
-                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-4">3. Bestellbestätigung</h3>
+                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-4">3. Bestätigung</h3>
 
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" name="consent" value="1"
-                                   {{ old('consent') ? 'checked' : '' }}
-                                   class="mt-0.5 rounded border-[#DDD6CA] text-brand-600 focus:ring-brand-600 @error('consent') border-[#9A4F3F] @enderror">
-                            <span class="text-sm text-[#2F2E2A]">
-                                Ich bestelle zahlungspflichtig.
-                            </span>
-                        </label>
+                        <div class="space-y-4">
+                            {{-- Publication authorization --}}
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="pub_auth" value="1"
+                                       {{ old('pub_auth') ? 'checked' : '' }}
+                                       class="mt-0.5 rounded border-[#DDD6CA] text-brand-600 focus:ring-brand-600 @error('pub_auth') border-[#9A4F3F] @enderror">
+                                <span class="text-sm text-[#2F2E2A]">
+                                    Ich bestätige, dass ich berechtigt bin, diese Erinnerungsseite zu veröffentlichen.
+                                </span>
+                            </label>
+                            @error('pub_auth')
+                                <p class="text-sm text-[#9A4F3F]">{{ $message }}</p>
+                            @enderror
 
-                        @error('consent')
-                            <p class="mt-2 text-sm text-[#9A4F3F]">{{ $message }}</p>
-                        @enderror
+                            {{-- Payment confirmation --}}
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="consent" value="1"
+                                       {{ old('consent') ? 'checked' : '' }}
+                                       class="mt-0.5 rounded border-[#DDD6CA] text-brand-600 focus:ring-brand-600 @error('consent') border-[#9A4F3F] @enderror">
+                                <span class="text-sm text-[#2F2E2A]">
+                                    Ich bestelle zahlungspflichtig.
+                                </span>
+                            </label>
+                            @error('consent')
+                                <p class="text-sm text-[#9A4F3F]">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 

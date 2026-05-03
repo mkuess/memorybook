@@ -22,6 +22,7 @@ class Order extends Model
         'billing_city',
         'billing_country',
         'consent_confirmed_at',
+        'publication_authorization_confirmed_at',
     ];
 
     protected $attributes = [
@@ -32,7 +33,8 @@ class Order extends Model
     protected function casts(): array
     {
         return [
-            'consent_confirmed_at' => 'datetime',
+            'consent_confirmed_at'                   => 'datetime',
+            'publication_authorization_confirmed_at' => 'datetime',
         ];
     }
 
