@@ -146,7 +146,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Stories verwalten');
+        $response->assertSee('Erinnerungen verwalten');
         $response->assertSee(route('memory-pages.stories.index', $page), false);
     }
 
@@ -154,6 +154,7 @@ class MemoryPageEditTest extends TestCase
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
 
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
@@ -347,6 +348,7 @@ class MemoryPageEditTest extends TestCase
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
 
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
@@ -358,6 +360,7 @@ class MemoryPageEditTest extends TestCase
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
         $code = $page->qrCode->short_code;
 
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
@@ -370,6 +373,7 @@ class MemoryPageEditTest extends TestCase
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
+        $this->createPaidOrder($user, $page);
 
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
@@ -409,7 +413,7 @@ class MemoryPageEditTest extends TestCase
 
     // --- publish labels ---
 
-    public function test_unpublished_page_with_paid_order_shows_jetzt_veröffentlichen_button(): void
+    public function test_unpublished_page_with_paid_order_shows_profilseite_aktivieren_button(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user, ['is_published' => false]);
@@ -418,10 +422,10 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Jetzt veröffentlichen');
+        $response->assertSee('Profilseite aktivieren');
     }
 
-    public function test_published_page_with_paid_order_shows_nicht_mehr_veröffentlichen_button(): void
+    public function test_published_page_with_paid_order_shows_profilseite_deaktivieren_button(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user, ['is_published' => true]);
@@ -430,7 +434,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Nicht mehr veröffentlichen');
+        $response->assertSee('Profilseite deaktivieren');
     }
 
     // --- new publish/checkout visibility rules ---
@@ -454,8 +458,8 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertDontSee('Jetzt veröffentlichen');
-        $response->assertDontSee('Nicht mehr veröffentlichen');
+        $response->assertDontSee('Profilseite aktivieren');
+        $response->assertDontSee('Profilseite deaktivieren');
     }
 
     public function test_checkout_cta_shown_before_paid_order(): void
@@ -482,7 +486,7 @@ class MemoryPageEditTest extends TestCase
         $response->assertDontSee('Veröffentlichung bestellen');
     }
 
-    public function test_edit_shows_bestellung_eingegangen_when_order_is_requested(): void
+    public function test_edit_shows_bestellung_in_bearbeitung_when_order_is_requested(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
@@ -491,12 +495,13 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Bestellung eingegangen');
+        $response->assertSee('Bestellung in Bearbeitung');
         $response->assertDontSee('Veröffentlichung bestellen');
-        $response->assertDontSee('Jetzt veröffentlichen');
+        $response->assertDontSee('Profilseite aktivieren');
+        $response->assertDontSee('wird geprüft');
     }
 
-    public function test_edit_shows_bestellung_eingegangen_when_order_is_in_review(): void
+    public function test_edit_shows_bestellung_in_bearbeitung_when_order_is_in_review(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
@@ -505,8 +510,9 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Bestellung eingegangen');
-        $response->assertDontSee('Jetzt veröffentlichen');
+        $response->assertSee('Bestellung in Bearbeitung');
+        $response->assertDontSee('Profilseite aktivieren');
+        $response->assertDontSee('wird geprüft');
     }
 
     public function test_edit_shows_checkout_cta_when_order_is_cancelled(): void
@@ -522,7 +528,7 @@ class MemoryPageEditTest extends TestCase
         $response->assertSee('storniert');
     }
 
-    public function test_paid_order_shows_veröffentlichung_verwalten_section(): void
+    public function test_paid_order_shows_profilseite_aktivieren_section(): void
     {
         $user = User::factory()->create();
         $page = $this->createPageForUser($user);
@@ -531,7 +537,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Veröffentlichung verwalten');
+        $response->assertSee('Profilseite aktivieren');
     }
 
     public function test_publish_button_shown_after_paid_order(): void
@@ -543,7 +549,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Jetzt veröffentlichen');
+        $response->assertSee('Profilseite aktivieren');
     }
 
     public function test_unpublish_button_shown_after_paid_order_when_published(): void
@@ -555,7 +561,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Nicht mehr veröffentlichen');
+        $response->assertSee('Profilseite deaktivieren');
     }
 
     public function test_requested_order_does_not_unlock_publish_button(): void
@@ -579,7 +585,7 @@ class MemoryPageEditTest extends TestCase
         $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertDontSee('Jetzt veröffentlichen');
+        $response->assertDontSee('Profilseite aktivieren');
     }
 
     public function test_edit_page_does_not_show_publication_authorization_checkbox(): void

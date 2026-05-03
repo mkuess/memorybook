@@ -25,7 +25,7 @@ class StoryEditTest extends TestCase
         $story = $page->stories()->create([
             'user_id'      => $owner->id,
             'title'        => 'Originaltitel',
-            'content'      => 'Originalinhalt',
+            'content'      => 'Originalinhalt der Erinnerung.',
             'is_published' => false,
         ]);
 
@@ -40,7 +40,7 @@ class StoryEditTest extends TestCase
             ->get(route('memory-pages.stories.edit', [$page, $story]));
 
         $response->assertOk();
-        $response->assertSee('Originaltitel');
+        $response->assertSee('Originalinhalt der Erinnerung.');
     }
 
     public function test_non_owner_gets_403_on_edit_story_page(): void
@@ -60,13 +60,12 @@ class StoryEditTest extends TestCase
 
         $response = $this->actingAs($owner)
             ->put(route('memory-pages.stories.update', [$page, $story]), [
-                'title'        => 'Neuer Titel',
-                'content'      => 'Neuer Inhalt',
+                'content'      => 'Neuer Inhalt der Erinnerung.',
                 'is_published' => '1',
             ]);
 
         $response->assertRedirect(route('memory-pages.stories.index', $page));
-        $this->assertEquals('Neuer Titel', $story->fresh()->title);
+        $this->assertSame('Neuer Inhalt der Erinnerung.', $story->fresh()->content);
         $this->assertTrue($story->fresh()->is_published);
     }
 
@@ -100,7 +99,6 @@ class StoryEditTest extends TestCase
 
         $this->actingAs($owner)
             ->put(route('memory-pages.stories.update', [$page, $story]), [
-                'title'   => $story->title,
                 'content' => $story->content,
             ]);
 

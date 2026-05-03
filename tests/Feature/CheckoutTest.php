@@ -202,7 +202,7 @@ class CheckoutTest extends TestCase
         $this->assertSame($page->id, $order->memory_page_id);
     }
 
-    public function test_created_order_has_status_requested(): void
+    public function test_created_order_has_status_paid(): void
     {
         Mail::fake();
         [$owner, $page] = $this->makeOwnerAndPage();
@@ -212,7 +212,7 @@ class CheckoutTest extends TestCase
 
         $order = Order::first();
         $this->assertNotNull($order);
-        $this->assertSame('requested', $order->status);
+        $this->assertSame('paid', $order->status);
     }
 
     public function test_checkout_page_prefills_billing_name_from_user(): void
@@ -295,7 +295,59 @@ class CheckoutTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Bestellung eingegangen');
-        $response->assertSee('Wir prüfen deine Angaben und melden uns.');
+        $response->assertSee('Du kannst deine Profilseite jetzt aktivieren.');
+    }
+
+    public function test_after_checkout_edit_page_does_not_show_wird_geprüft(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('wird geprüft');
+    }
+
+    public function test_after_checkout_edit_page_shows_profilseite_aktivieren(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Profilseite aktivieren');
+    }
+
+    public function test_after_checkout_qr_code_link_is_visible(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('QR-Code anzeigen');
+    }
+
+    public function test_before_checkout_qr_code_link_is_hidden(): void
+    {
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('QR-Code anzeigen');
     }
 
     // --- edit page link ---

@@ -188,12 +188,12 @@ class PublicMemoryPageLayoutTest extends TestCase
         $response = $this->get("/m/{$code}");
 
         $response->assertOk();
-        $response->assertSee('Geschichte nach Galerie');
+        $response->assertSee('Inhalt hier.');
 
         // Gallery must appear before stories in page output
         $content      = $response->getContent();
         $galleryPos   = strpos($content, "memory-pages/{$page->id}/gallery/gallery0.jpg");
-        $storyPos     = strpos($content, 'Geschichte nach Galerie');
+        $storyPos     = strpos($content, 'Inhalt hier.');
         $this->assertLessThan($storyPos, $galleryPos, 'Gallery must appear before stories');
     }
 
@@ -355,7 +355,7 @@ class PublicMemoryPageLayoutTest extends TestCase
         $response->assertSee('Maria Muster');
         $response->assertSee('Biografie Text.');
         $response->assertSee("memory-pages/{$page->id}/gallery/gallery0.jpg", false);
-        $response->assertSee('Eine Geschichte');
+        $response->assertSee('Geschichte Inhalt.');
         $response->assertSee('Profil teilen');
     }
 }

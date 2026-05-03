@@ -53,7 +53,10 @@ class PublicMemoryPageController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('memory-pages.show', compact('page', 'stories', 'profilePhoto', 'galleryImages', 'previewMode'));
+        $canLeaveMemory = ($previewMode === null) && $page->canBePublished();
+        $shortCode      = $code;
+
+        return view('memory-pages.show', compact('page', 'stories', 'profilePhoto', 'galleryImages', 'previewMode', 'canLeaveMemory', 'shortCode'));
     }
 
     private function isVisible($page): bool

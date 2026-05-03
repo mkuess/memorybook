@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\PublicMemoryPageController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\VisitorMemoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,6 +23,11 @@ Route::get('/', function () {
 });
 
 Route::get('/m/{slug}', [PublicMemoryPageController::class, 'show'])->name('memory-pages.public');
+
+Route::get('/m/{code}/erinnerung-hinterlassen', [VisitorMemoryController::class, 'create'])->name('visitor-memory.create');
+Route::post('/m/{code}/erinnerung-hinterlassen', [VisitorMemoryController::class, 'store'])->name('visitor-memory.store')->middleware('throttle:5,1');
+Route::get('/m/{code}/erinnerung-hinterlassen/danke', [VisitorMemoryController::class, 'thankYou'])->name('visitor-memory.thankyou');
+Route::get('/m/{code}/erinnerung-bestaetigen/{token}', [VisitorMemoryController::class, 'confirm'])->name('visitor-memory.confirm');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])

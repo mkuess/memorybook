@@ -43,6 +43,7 @@ class CheckoutController extends Controller
             'user_id'                                => $request->user()->id,
             'memory_page_id'                         => $memoryPage->id,
             'package'                                => $validated['package'],
+            'status'                                 => 'paid',
             'billing_name'                           => $validated['billing_name'],
             'billing_email'                          => $validated['billing_email'],
             'billing_address'                        => $validated['billing_address'],

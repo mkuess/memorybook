@@ -15,7 +15,7 @@
                 </a>
                 <a href="{{ route('memory-pages.stories.create', $memoryPage) }}"
                    class="inline-flex items-center px-4 py-2 bg-brand-600 border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
-                    Neue Erinnerung
+                    Erinnerung hinzufügen
                 </a>
             </div>
 
@@ -38,17 +38,35 @@
                             <li class="p-6">
                                 <div class="flex items-start justify-between gap-4">
                                     <div class="min-w-0">
-                                        <p class="font-medium text-[#2F2E2A]">{{ $story->title }}</p>
+                                        @if ($story->image_path)
+                                            <div class="mb-2">
+                                                <img src="{{ Storage::disk('public')->url($story->image_path) }}"
+                                                     alt=""
+                                                     class="h-14 object-cover rounded border border-[#DDD6CA]">
+                                            </div>
+                                        @endif
                                         <p class="mt-1 text-sm text-[#706B62] line-clamp-2">{{ $story->content }}</p>
                                     </div>
                                     <div class="shrink-0 flex items-center gap-3">
-                                        <span class="text-xs px-2 py-0.5 rounded {{ $story->is_published ? 'bg-[#E8EDE7] text-[#6F7F68]' : 'bg-[#EFEAE1] text-[#706B62]' }}">
-                                            {{ $story->is_published ? 'Veröffentlicht' : 'Entwurf' }}
-                                        </span>
-                                        <a href="{{ route('memory-pages.stories.edit', [$memoryPage, $story]) }}"
-                                           class="text-sm text-brand-600 hover:text-brand-700">
-                                            Bearbeiten
-                                        </a>
+                                        @if ($story->is_visitor_submission && ! $story->is_published)
+                                            <span class="text-xs px-2 py-0.5 rounded bg-[#FDF7E3] text-[#9A7A2F]">
+                                                Wartet auf E-Mail-Bestätigung
+                                            </span>
+                                        @elseif ($story->is_published)
+                                            <span class="text-xs px-2 py-0.5 rounded bg-[#E8EDE7] text-[#6F7F68]">
+                                                Veröffentlicht
+                                            </span>
+                                        @else
+                                            <span class="text-xs px-2 py-0.5 rounded bg-[#EFEAE1] text-[#706B62]">
+                                                Entwurf
+                                            </span>
+                                        @endif
+                                        @if (! $story->is_visitor_submission)
+                                            <a href="{{ route('memory-pages.stories.edit', [$memoryPage, $story]) }}"
+                                               class="text-sm text-brand-600 hover:text-brand-700">
+                                                Bearbeiten
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </li>

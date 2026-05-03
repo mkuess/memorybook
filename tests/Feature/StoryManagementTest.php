@@ -26,7 +26,6 @@ class StoryManagementTest extends TestCase
     private function storyPayload(array $overrides = []): array
     {
         return array_merge([
-            'title'   => 'Eine schöne Erinnerung',
             'content' => 'Dies ist der Inhalt der Erinnerung.',
         ], $overrides);
     }
@@ -70,7 +69,7 @@ class StoryManagementTest extends TestCase
             ->post(route('memory-pages.stories.store', $page), $this->storyPayload());
 
         $response->assertRedirect(route('memory-pages.stories.index', $page));
-        $this->assertDatabaseHas('stories', ['title' => 'Eine schöne Erinnerung']);
+        $this->assertDatabaseHas('stories', ['content' => 'Dies ist der Inhalt der Erinnerung.']);
     }
 
     public function test_created_story_belongs_to_memory_page(): void

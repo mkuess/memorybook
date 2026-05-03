@@ -257,14 +257,15 @@
 
             @if ($orderStatus === 'paid')
 
-                {{-- State: paid → show publication controls --}}
+                {{-- State: paid → activation controls --}}
                 <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-4">Veröffentlichung verwalten</h3>
+                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-1">Profilseite aktivieren</h3>
+                        <p class="text-xs text-[#706B62] mb-4">Du kannst deine Profilseite jederzeit aktivieren oder deaktivieren.</p>
 
                         @if ($memoryPage->is_published)
                             <p class="text-sm text-[#6F7F68] mb-4">
-                                Diese Seite ist veröffentlicht.
+                                Die Profilseite ist aktiv.
                                 @if ($memoryPage->published_at)
                                     <span class="text-[#706B62]">({{ $memoryPage->published_at->format('d.m.Y H:i') }})</span>
                                 @endif
@@ -273,7 +274,7 @@
                                 @csrf
                                 <button type="submit"
                                     class="inline-flex items-center px-4 py-2 bg-[#9A4F3F] border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#7E3F31] focus:outline-none focus:ring-2 focus:ring-[#9A4F3F] focus:ring-offset-2 transition ease-in-out duration-150">
-                                    Nicht mehr veröffentlichen
+                                    Profilseite deaktivieren
                                 </button>
                             </form>
                         @else
@@ -281,7 +282,7 @@
                                 @csrf
                                 <button type="submit"
                                     class="inline-flex items-center px-4 py-2 bg-[#6F7F68] border border-transparent rounded font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#5A6A54] focus:outline-none focus:ring-2 focus:ring-[#6F7F68] focus:ring-offset-2 transition ease-in-out duration-150">
-                                    Jetzt veröffentlichen
+                                    Profilseite aktivieren
                                 </button>
                             </form>
                         @endif
@@ -290,7 +291,7 @@
 
             @elseif ($orderStatus === 'requested' || $orderStatus === 'in_review')
 
-                {{-- State: order pending review --}}
+                {{-- State: order in processing (admin-managed state, checkout always creates paid) --}}
                 <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
                     <div class="p-6 flex items-start gap-4">
                         <div class="w-8 h-8 rounded-full bg-[#EEF0E9] flex items-center justify-center shrink-0 mt-0.5">
@@ -299,9 +300,9 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="font-semibold text-[#2F2E2A] text-sm">Bestellung eingegangen</p>
+                            <p class="font-semibold text-[#2F2E2A] text-sm">Bestellung in Bearbeitung</p>
                             <p class="text-xs text-[#706B62] mt-1 leading-relaxed">
-                                Deine Bestellung ist eingegangen und wird geprüft. Sobald die Veröffentlichung freigegeben ist, kannst du deine Erinnerungsseite veröffentlichen.
+                                Deine Bestellung wird bearbeitet.
                             </p>
                         </div>
                     </div>
@@ -354,22 +355,24 @@
                     <div class="flex flex-wrap gap-3">
                         <a href="{{ route('memory-pages.stories.index', $memoryPage) }}"
                            class="inline-flex items-center px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
-                            Stories verwalten
+                            Erinnerungen verwalten
                         </a>
-                        <a href="{{ route('memory-pages.qr-code', $memoryPage) }}"
-                           class="inline-flex items-center px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
-                            QR-Code anzeigen
-                        </a>
-                        @if ($memoryPage->qrCode)
-                            <a href="/m/{{ $memoryPage->qrCode->short_code }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                </svg>
-                                Profilseite aufrufen
+                        @if ($memoryPage->canBePublished())
+                            <a href="{{ route('memory-pages.qr-code', $memoryPage) }}"
+                               class="inline-flex items-center px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
+                                QR-Code anzeigen
                             </a>
+                            @if ($memoryPage->qrCode)
+                                <a href="/m/{{ $memoryPage->qrCode->short_code }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                    Profilseite aufrufen
+                                </a>
+                            @endif
                         @endif
                     </div>
                 </div>

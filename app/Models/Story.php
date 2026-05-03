@@ -15,20 +15,28 @@ class Story extends Model
         'user_id',
         'title',
         'content',
+        'image_path',
+        'visitor_email',
+        'visitor_token',
+        'visitor_token_expires_at',
+        'is_visitor_submission',
         'sort_order',
         'is_published',
     ];
 
     protected $attributes = [
-        'sort_order'   => 0,
-        'is_published' => false,
+        'sort_order'            => 0,
+        'is_published'          => false,
+        'is_visitor_submission' => false,
     ];
 
     protected function casts(): array
     {
         return [
-            'sort_order'   => 'integer',
-            'is_published' => 'boolean',
+            'sort_order'               => 'integer',
+            'is_published'             => 'boolean',
+            'is_visitor_submission'    => 'boolean',
+            'visitor_token_expires_at' => 'datetime',
         ];
     }
 

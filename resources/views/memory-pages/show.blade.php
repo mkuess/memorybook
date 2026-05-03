@@ -51,14 +51,20 @@
                     </p>
                 @endif
 
-                {{-- Share button — directly below date section --}}
-                <div class="mt-5 flex flex-col items-center gap-2">
+                {{-- Action buttons --}}
+                <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2">
                     <button onclick="shareProfile()"
                             class="inline-flex items-center px-5 py-2 bg-brand-700 text-white text-sm font-medium rounded hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
                         Profil teilen
                     </button>
-                    <p id="share-msg" class="text-xs text-gray-500 min-h-[1rem]"></p>
+                    @if ($canLeaveMemory ?? false)
+                        <a href="{{ route('visitor-memory.create', $shortCode) }}"
+                           class="inline-flex items-center px-5 py-2 bg-[#EFEAE1] border border-[#DDD6CA] text-[#2F2E2A] text-sm font-medium rounded hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
+                            Erinnerung hinterlassen
+                        </a>
+                    @endif
                 </div>
+                <p id="share-msg" class="text-xs text-gray-500 min-h-[1rem] text-center mt-1"></p>
 
                 @if ($page->short_bio)
                     <div class="mt-6 pt-5 border-t border-gray-100 text-gray-700 leading-relaxed text-sm sm:text-base text-left">
@@ -83,14 +89,18 @@
                 </div>
             @endif
 
-            {{-- Stories --}}
+            {{-- Erinnerungen --}}
             @if ($stories->isNotEmpty())
                 <div class="mt-5 space-y-4">
                     @foreach ($stories as $story)
                         <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8">
-                            <h2 class="text-lg sm:text-xl font-semibold text-brand-900 mb-3">
-                                {{ $story->title }}
-                            </h2>
+                            @if ($story->image_path)
+                                <div class="mb-4">
+                                    <img src="{{ Storage::disk('public')->url($story->image_path) }}"
+                                         alt=""
+                                         class="w-full rounded-lg object-cover max-h-64">
+                                </div>
+                            @endif
                             <div class="text-gray-700 leading-relaxed text-sm sm:text-base">
                                 {{ $story->content }}
                             </div>

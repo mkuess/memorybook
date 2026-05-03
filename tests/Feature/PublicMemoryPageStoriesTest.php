@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\MemoryPage;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -25,12 +26,33 @@ class PublicMemoryPageStoriesTest extends TestCase
         ]);
     }
 
+    private function makeEligiblePage(): MemoryPage
+    {
+        $page = $this->makeVisiblePage();
+        Order::create([
+            'user_id'                                => $page->user_id,
+            'memory_page_id'                         => $page->id,
+            'package'                                => 'basic',
+            'status'                                 => 'paid',
+            'billing_name'                           => 'Test',
+            'billing_email'                          => 'test@example.com',
+            'billing_address'                        => 'Str. 1',
+            'billing_postal_code'                    => '1010',
+            'billing_city'                           => 'Wien',
+            'billing_country'                        => 'Österreich',
+            'consent_confirmed_at'                   => now(),
+            'publication_authorization_confirmed_at' => now(),
+        ]);
+
+        return $page;
+    }
+
     public function test_public_memory_page_shows_published_stories(): void
     {
         $page = $this->makeVisiblePage();
         $page->stories()->create([
             'user_id'      => $page->user_id,
-            'title'        => 'Veröffentlichte Erinnerung',
+            'title'        => 'Auto',
             'content'      => 'Inhalt der Erinnerung.',
             'is_published' => true,
         ]);
@@ -38,7 +60,6 @@ class PublicMemoryPageStoriesTest extends TestCase
         $response = $this->get("/m/{$page->qrCode->short_code}");
 
         $response->assertOk();
-        $response->assertSee('Veröffentlichte Erinnerung');
         $response->assertSee('Inhalt der Erinnerung.');
     }
 
@@ -47,7 +68,7 @@ class PublicMemoryPageStoriesTest extends TestCase
         $page = $this->makeVisiblePage();
         $page->stories()->create([
             'user_id'      => $page->user_id,
-            'title'        => 'Unveröffentlichte Erinnerung',
+            'title'        => 'Auto',
             'content'      => 'Geheimer Inhalt.',
             'is_published' => false,
         ]);
@@ -55,7 +76,6 @@ class PublicMemoryPageStoriesTest extends TestCase
         $response = $this->get("/m/{$page->qrCode->short_code}");
 
         $response->assertOk();
-        $response->assertDontSee('Unveröffentlichte Erinnerung');
         $response->assertDontSee('Geheimer Inhalt.');
     }
 
@@ -65,14 +85,14 @@ class PublicMemoryPageStoriesTest extends TestCase
 
         $page->stories()->create([
             'user_id'      => $page->user_id,
-            'title'        => 'Zweite Geschichte',
+            'title'        => 'Auto',
             'content'      => 'Inhalt B.',
             'sort_order'   => 2,
             'is_published' => true,
         ]);
         $page->stories()->create([
             'user_id'      => $page->user_id,
-            'title'        => 'Erste Geschichte',
+            'title'        => 'Auto',
             'content'      => 'Inhalt A.',
             'sort_order'   => 1,
             'is_published' => true,
@@ -83,9 +103,9 @@ class PublicMemoryPageStoriesTest extends TestCase
         $response->assertOk();
         $content = $response->getContent();
         $this->assertLessThan(
-            strpos($content, 'Zweite Geschichte'),
-            strpos($content, 'Erste Geschichte'),
-            'Erste Geschichte should appear before Zweite Geschichte'
+            strpos($content, 'Inhalt B.'),
+            strpos($content, 'Inhalt A.'),
+            'Inhalt A. should appear before Inhalt B.'
         );
     }
 
@@ -106,7 +126,7 @@ class PublicMemoryPageStoriesTest extends TestCase
 
             $page->stories()->create([
                 'user_id'      => $user->id,
-                'title'        => 'Versteckte Erinnerung',
+                'title'        => 'Auto',
                 'content'      => 'Versteckter Inhalt.',
                 'is_published' => true,
             ]);
@@ -114,7 +134,103 @@ class PublicMemoryPageStoriesTest extends TestCase
             $response = $this->get("/m/{$page->qrCode->short_code}");
 
             $response->assertOk();
-            $response->assertDontSee('Versteckte Erinnerung');
+            $response->assertDontSee('Versteckter Inhalt.');
         }
+    }
+
+    // --- "Erinnerung hinterlassen" button ---
+
+    public function test_public_page_shows_erinnerung_hinterlassen_button_when_eligible(): void
+    {
+        $page = $this->makeEligiblePage();
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertSee('Erinnerung hinterlassen');
+    }
+
+    public function test_public_page_does_not_show_button_when_no_paid_order(): void
+    {
+        $page = $this->makeVisiblePage();
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertDontSee('Erinnerung hinterlassen');
+    }
+
+    public function test_public_page_does_not_show_button_on_private_page(): void
+    {
+        $user = User::factory()->create();
+        $page = MemoryPage::create([
+            'user_id'      => $user->id,
+            'slug'         => substr(md5(uniqid()), 0, 8),
+            'person_name'  => 'Max',
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'private',
+        ]);
+
+        $response = $this->actingAs($user)->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertDontSee('Erinnerung hinterlassen');
+    }
+
+    // --- confirmed visitor memories ---
+
+    public function test_public_page_shows_confirmed_visitor_memory(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'               => $page->user_id,
+            'title'                 => 'Auto',
+            'content'               => 'Ich war dabei, das war wunderbar.',
+            'is_visitor_submission' => true,
+            'is_published'          => true,
+            'visitor_email'         => 'v@example.com',
+            'visitor_token'         => null,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertSee('Ich war dabei, das war wunderbar.');
+    }
+
+    public function test_public_page_does_not_show_unconfirmed_visitor_memory(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'               => $page->user_id,
+            'title'                 => 'Auto',
+            'content'               => 'Unveröffentlichter Besucher-Inhalt.',
+            'is_visitor_submission' => true,
+            'is_published'          => false,
+            'visitor_email'         => 'v@example.com',
+            'visitor_token'         => 'sometoken',
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertDontSee('Unveröffentlichter Besucher-Inhalt.');
+    }
+
+    public function test_existing_published_customer_stories_still_render(): void
+    {
+        $page = $this->makeVisiblePage();
+        $page->stories()->create([
+            'user_id'      => $page->user_id,
+            'title'        => 'Auto',
+            'content'      => 'Kundenseitig erstellte Erinnerung.',
+            'is_published' => true,
+        ]);
+
+        $response = $this->get("/m/{$page->qrCode->short_code}");
+
+        $response->assertOk();
+        $response->assertSee('Kundenseitig erstellte Erinnerung.');
     }
 }

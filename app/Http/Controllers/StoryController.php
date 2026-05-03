@@ -7,6 +7,7 @@ use App\Models\Story;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class StoryController extends Controller
@@ -32,15 +33,21 @@ class StoryController extends Controller
         Gate::allowIf($request->user()->id === $memoryPage->user_id);
 
         $validated = $request->validate([
-            'title'        => ['required', 'string', 'max:255'],
             'content'      => ['required', 'string'],
+            'image'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'is_published' => ['boolean'],
         ]);
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('story-images', 'public');
+        }
+
         $memoryPage->stories()->create([
             'user_id'      => $request->user()->id,
-            'title'        => $validated['title'],
+            'title'        => 'Erinnerung vom ' . now()->format('d.m.Y'),
             'content'      => $validated['content'],
+            'image_path'   => $imagePath,
             'is_published' => $validated['is_published'] ?? false,
         ]);
 
@@ -65,14 +72,22 @@ class StoryController extends Controller
         abort_unless($story->memory_page_id === $memoryPage->id, 404);
 
         $validated = $request->validate([
-            'title'        => ['required', 'string', 'max:255'],
             'content'      => ['required', 'string'],
+            'image'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'is_published' => ['boolean'],
         ]);
 
+        $imagePath = $story->image_path;
+        if ($request->hasFile('image')) {
+            if ($story->image_path) {
+                Storage::disk('public')->delete($story->image_path);
+            }
+            $imagePath = $request->file('image')->store('story-images', 'public');
+        }
+
         $story->update([
-            'title'        => $validated['title'],
             'content'      => $validated['content'],
+            'image_path'   => $imagePath,
             'is_published' => $validated['is_published'] ?? false,
         ]);
 
