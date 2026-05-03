@@ -1,47 +1,70 @@
 <x-guest-layout>
+
+    <h1 class="text-xl font-semibold text-[#2F2E2A] mb-6">Anmelden</h1>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- Email Address -->
+        <!-- E-Mail-Adresse -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-input-label for="email" value="E-Mail-Adresse" />
+            <x-text-input id="email"
+                          class="block mt-1 w-full"
+                          type="email"
+                          name="email"
+                          :value="old('email')"
+                          required
+                          autofocus
+                          autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
+        <!-- Passwort -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+            <x-input-label for="password" value="Passwort" />
+            <x-text-input id="password"
+                          class="block mt-1 w-full"
+                          type="password"
+                          name="password"
+                          required
+                          autocomplete="current-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <!-- Remember Me -->
+        <!-- Angemeldet bleiben -->
         <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+            <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
+                <input id="remember_me"
+                       type="checkbox"
+                       name="remember"
+                       class="rounded border-[#DDD6CA] text-brand-600 shadow-sm focus:ring-brand-600">
+                <span class="text-sm text-[#706B62]">Angemeldet bleiben</span>
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between mt-6">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a href="{{ route('password.request') }}"
+                   class="text-sm text-[#706B62] hover:text-[#2F2E2A] underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 rounded">
+                    Passwort vergessen?
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
+            <x-primary-button>
+                Anmelden
             </x-primary-button>
         </div>
     </form>
+
+    <div class="mt-6 pt-5 border-t border-[#DDD6CA] text-center text-sm text-[#706B62]">
+        Noch kein Konto?
+        <a href="{{ route('register') }}"
+           class="font-semibold text-brand-600 hover:text-brand-700 underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 rounded">
+            Konto erstellen
+        </a>
+    </div>
+
 </x-guest-layout>
