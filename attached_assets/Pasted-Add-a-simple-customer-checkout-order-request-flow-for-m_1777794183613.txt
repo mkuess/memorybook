@@ -1,0 +1,116 @@
+Add a simple customer checkout/order request flow for memory pages.
+
+Goal:
+- Customers should be able to submit a paid order request for a memory page.
+- This is not online payment yet.
+- It creates an internal order for admin review.
+
+Recommended flow:
+- After creating a memory page, still redirect to the edit page.
+- On the customer memory page edit page, add a clear button:
+  "Paket auswählen / Veröffentlichung bestellen"
+- The button links to:
+  /memory-pages/{memoryPage}/checkout
+
+Requirements:
+- create a checkout page for the memory page owner only
+- route requires auth
+- only the owner of the memory page can access checkout
+- non-owner gets 403
+
+Checkout page fields:
+1. Paket auswählen
+- package select/radio options:
+  - basic = Erinnerungsseite
+  - plaque = Erinnerungsseite + QR-Plakette
+- show simple placeholder prices for now or use config values if already defined
+- keep labels German
+
+2. Rechnungsdaten
+- billing_name required
+- billing_email required
+- billing_address required
+- billing_postal_code required
+- billing_city required
+- billing_country required, default Österreich if appropriate
+
+3. Rechtlicher Hinweis / Checkbox
+- required checkbox:
+  "Ich bestelle zahlungspflichtig."
+- form must not submit without checkbox
+
+Submit button:
+- label: "Zahlungspflichtig bestellen"
+
+Data model:
+- create a simple Order model/table if no suitable one exists
+- if PlaqueOrder already exists but is only for plaque requests, do not overload it unless it clearly fits
+- recommended fields:
+  - user_id
+  - memory_page_id
+  - package
+  - status default requested
+  - billing_name
+  - billing_email
+  - billing_address
+  - billing_postal_code
+  - billing_city
+  - billing_country
+  - consent_confirmed_at
+  - timestamps
+- status options:
+  - requested
+  - in_review
+  - paid
+  - cancelled
+
+After submit:
+- create the order
+- redirect back to the memory page edit page or to a simple confirmation page
+- show message:
+  "Bestellung eingegangen. Wir prüfen deine Angaben und melden uns."
+
+Admin notification:
+- simplest MVP:
+  - show new orders in admin dashboard as pending count
+  - create an admin resource "Bestellungen" if simple
+- additionally send an email notification to the system admin if mail config exists
+- if mail is not configured, do not fail the order; log the notification or skip email safely
+
+Admin area:
+- create Filament resource "Bestellungen"
+- admin can list orders
+- admin can view order details
+- admin can edit status
+- admin cannot delete orders yet
+- table columns:
+  - memory page person_name
+  - user email
+  - package
+  - status
+  - created_at
+
+Do not:
+- do not integrate Stripe/PayPal yet
+- do not mark payment as paid automatically
+- do not publish the memory page automatically
+- do not change existing plaque order behavior unless explicitly needed
+- do not change public profile route behavior
+
+Tests:
+- owner can access checkout page
+- non-owner cannot access checkout page
+- checkout requires package
+- checkout requires billing fields
+- checkout requires "Ich bestelle zahlungspflichtig" checkbox
+- owner can submit checkout
+- created order belongs to user
+- created order belongs to memory page
+- created order has status requested
+- admin can access orders list
+- normal user cannot access orders admin resource
+- order submission does not fail if email notification is unavailable
+
+Run:
+- php artisan test
+- show changed files and test results

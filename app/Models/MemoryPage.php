@@ -87,6 +87,11 @@ class MemoryPage extends Model
         return $this->hasOne(QrCode::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function plaqueOrders(): HasMany
     {
         return $this->hasMany(PlaqueOrder::class);
