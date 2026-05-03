@@ -1,0 +1,65 @@
+Allow memory page owners to preview their own public profile page even when it is not publicly visible.
+
+Current behavior:
+- The public memory page route /m/{short_code} only shows the page if it is publicly available.
+- If the page is private/unpublished/not released, even the logged-in owner cannot view it.
+
+Desired behavior:
+- Public visitors should still only see the page when it is publicly available.
+- The logged-in owner of the memory page should be able to view/preview their own page through /m/{short_code}, even if:
+  - visibility is private
+  - is_published is false
+- Admins may also preview any page if simple and safe.
+- If the page is admin-locked (is_locked = true), keep it unavailable unless the viewer is admin.
+  - owner should not bypass admin lock
+  - admin may preview locked pages
+
+Rules:
+- Guest/public visitor:
+  - show page only if:
+    - is_published = true
+    - is_locked = false
+    - visibility is link or public
+  - otherwise show the existing calm unavailable view, not 404
+
+- Logged-in owner:
+  - may view their own page if:
+    - is_locked = false
+  - may view regardless of:
+    - is_published
+    - visibility
+  - show a small preview notice at the top:
+    "Vorschau: Diese Seite ist derzeit nicht öffentlich sichtbar."
+
+- Admin:
+  - may view any page as preview, including locked pages
+  - show a small preview notice at the top:
+    "Admin-Vorschau: Diese Seite ist öffentlich möglicherweise nicht sichtbar."
+
+- Non-owner logged-in user:
+  - same behavior as guest/public visitor
+
+Do not change:
+- QR code route format
+- short code lookup
+- customer edit routes
+- admin resource routes
+- database fields
+- story/gallery visibility rules except as part of this page preview
+- public unavailable message behavior for guests
+
+Tests:
+- owner can view own unpublished page through /m/{short_code}
+- owner can view own private page through /m/{short_code}
+- owner cannot view own locked page unless admin
+- admin can view locked page through /m/{short_code}
+- guest cannot view unpublished page
+- guest cannot view private page
+- non-owner cannot view private/unpublished page
+- public published link/public page still works as before
+- owner preview shows the preview notice
+- admin preview shows the admin preview notice
+
+Run:
+- php artisan test
+- show changed files and test results

@@ -36,6 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/memory-pages/{memoryPage}/publish', [MemoryPageController::class, 'publish'])->name('memory-pages.publish');
     Route::post('/memory-pages/{memoryPage}/unpublish', [MemoryPageController::class, 'unpublish'])->name('memory-pages.unpublish');
     Route::get('/memory-pages/{memoryPage}/qr-code', [MemoryPageQrController::class, 'show'])->name('memory-pages.qr-code');
+    Route::get('/memory-pages/{memoryPage}/qr-code/download/png', [MemoryPageQrController::class, 'downloadPng'])->name('memory-pages.qr-code.download-png');
+    Route::get('/memory-pages/{memoryPage}/qr-code/download/pdf', [MemoryPageQrController::class, 'downloadPdf'])->name('memory-pages.qr-code.download-pdf');
     Route::get('/memory-pages/{memoryPage}/profile-photo/upload', [ProfilePhotoController::class, 'create'])->name('memory-pages.profile-photo.create');
     Route::post('/memory-pages/{memoryPage}/profile-photo', [ProfilePhotoController::class, 'store'])->name('memory-pages.profile-photo.store');
     Route::post('/memory-pages/{memoryPage}/gallery', [GalleryController::class, 'store'])->name('memory-pages.gallery.store');

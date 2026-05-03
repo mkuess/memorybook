@@ -1,0 +1,106 @@
+Fix and complete the customer QR code page layout and downloads.
+
+Current issue:
+- The customer QR code page layout is broken.
+- The QR card is too narrow.
+- The public URL overflows outside the card.
+- The QR display text currently shows memorybook.at/ but it should show memorybook.com.
+- PNG/PDF download buttons are missing or not correctly implemented.
+
+Goal:
+- Create a clean, centered, mobile-friendly QR code page.
+- The QR code asset should be downloadable as PNG and PDF.
+- The downloadable PNG/PDF must include:
+  1. the QR code
+  2. first line below QR: memorybook.com
+  3. second line below QR: the short code
+
+Requirements:
+
+Page layout:
+- Update the customer QR code page.
+- Keep the page calm, clean, and centered.
+- Use a readable max width on desktop.
+- Mobile-first layout.
+- The QR code card should not be too narrow.
+- The public URL must not overflow.
+- If the full technical URL is shown, wrap it safely with break-words.
+- Prefer showing the clean display format:
+  - memorybook.com
+  - SHORTCODE
+- Keep scan count visible if already shown.
+- Keep "Zurück zur Bearbeitung" link.
+
+QR display:
+- Show QR code image centered.
+- Under the QR code show exactly:
+  - first line: memorybook.com
+  - second line: SHORTCODE
+- The second line should use the actual QR code short_code.
+- The short code should be uppercase in display.
+- Do not show memorybook.at anymore on this page.
+- Do not show the long Replit URL as the main visual label.
+
+QR target:
+- The QR code itself should still encode the real public profile URL that works in the current environment.
+- In development this can be the current APP_URL + /m/{short_code}.
+- The printed/displayed label below the QR code should still be memorybook.com + short code.
+
+Downloads:
+- Add two clear rectangular buttons:
+  - "PNG herunterladen"
+  - "PDF herunterladen"
+- PNG download should download an image containing:
+  - QR code
+  - memorybook.com
+  - SHORTCODE
+- PDF download should download a simple printable PDF containing:
+  - QR code
+  - memorybook.com
+  - SHORTCODE
+- Downloads should use the same short code and QR target URL.
+- If the PNG/PDF files do not exist yet, generate them automatically.
+- Store generated files on the public disk if appropriate.
+- Reuse existing qr code fields if available:
+  - png_path
+  - svg_path
+- Add a pdf_path field only if already available; otherwise generate PDF on demand without changing database unless necessary.
+- Keep implementation simple and production-compatible.
+- Do not use Replit-only dependencies.
+
+Short code:
+- Newly generated short codes should be uppercase.
+- Existing lowercase short codes should display uppercase on the QR page and download label.
+- Do not break existing public routes for already existing lowercase codes.
+- If changing route lookup, make it case-insensitive safely.
+
+Design:
+- Buttons rectangular, not pill-shaped.
+- Use project brand colors.
+- Ensure contrast is readable.
+- The QR card should look printable and not overflow.
+- Avoid huge whitespace or tiny cards.
+
+Do not change:
+- auth logic
+- public memory page availability rules
+- customer dashboard behavior
+- admin area except if shared QR code generation helpers are used
+- memory page/gallery/story behavior
+
+Tests:
+- add/update tests proving:
+  - QR page renders without overflowing long URL text where practical
+  - QR page shows "memorybook.com"
+  - QR page shows the short code on the next line
+  - QR image is shown
+  - PNG download route works
+  - PDF download route works
+  - PNG/PDF download content generation uses memorybook.com and the short code
+  - existing public /m/{short_code} route still works
+  - short code display is uppercase
+
+Run:
+- php artisan test
+- npm run build if CSS/JS changed
+- show changed files and test/build results

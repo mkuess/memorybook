@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\MemoryPage;
+use App\Models\QrCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -172,5 +173,64 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSee(route('memory-pages.qr-code', $page), false);
+    }
+
+    // --- new actions ---
+
+    public function test_dashboard_shows_qr_code_action_with_svg_icon(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('QR-Code');
+        $response->assertSee('<svg', false);
+    }
+
+    public function test_dashboard_shows_profil_aufrufen_action(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Profil aufrufen');
+    }
+
+    public function test_profil_aufrufen_links_to_public_profile_url(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+        $code = $page->qrCode->short_code;
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee("/m/{$code}", false);
+    }
+
+    public function test_profil_aufrufen_opens_in_new_tab(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('target="_blank"', false);
+        $response->assertSee('rel="noopener noreferrer"', false);
+    }
+
+    public function test_no_broken_profile_link_when_qr_code_is_missing(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $page->qrCode()->delete();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertDontSee('/m/', false);
+        $response->assertSee('Kein QR-Code');
+        $response->assertDontSee('Profil aufrufen');
     }
 }

@@ -8,6 +8,17 @@
 </head>
 <body class="bg-[#F8F5ED] text-gray-900 antialiased">
 
+    {{-- Preview notice banner --}}
+    @if (($previewMode ?? null) === 'owner')
+        <div class="bg-amber-50 border-b border-amber-200 px-4 py-3 text-sm text-amber-800 text-center">
+            Vorschau: Diese Seite ist derzeit nicht öffentlich sichtbar.
+        </div>
+    @elseif (($previewMode ?? null) === 'admin')
+        <div class="bg-blue-50 border-b border-blue-200 px-4 py-3 text-sm text-blue-800 text-center">
+            Admin-Vorschau: Diese Seite ist öffentlich möglicherweise nicht sichtbar.
+        </div>
+    @endif
+
     <div class="min-h-screen py-10 px-4 sm:py-16">
         <div class="w-full max-w-xl mx-auto">
 

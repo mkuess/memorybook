@@ -15,12 +15,29 @@ class PublicMemoryPageController extends Controller
             return view('memory-pages.unavailable');
         }
 
-        $qr->increment('scan_count');
-
         $page = $qr->memoryPage;
 
-        if (! $this->isVisible($page)) {
+        if ($page === null) {
             return view('memory-pages.unavailable');
+        }
+
+        $user              = auth()->user();
+        $isOwner           = $user && $user->id === $page->user_id;
+        $isAdmin           = $user && $user->isAdmin();
+        $isPubliclyVisible = $this->isVisible($page);
+
+        if ($isAdmin) {
+            $previewMode = 'admin';
+        } elseif ($isOwner && ! $page->is_locked) {
+            $previewMode = $isPubliclyVisible ? null : 'owner';
+        } elseif ($isPubliclyVisible) {
+            $previewMode = null;
+        } else {
+            return view('memory-pages.unavailable');
+        }
+
+        if ($previewMode === null) {
+            $qr->increment('scan_count');
         }
 
         $stories = $page->stories()
@@ -36,7 +53,7 @@ class PublicMemoryPageController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('memory-pages.show', compact('page', 'stories', 'profilePhoto', 'galleryImages'));
+        return view('memory-pages.show', compact('page', 'stories', 'profilePhoto', 'galleryImages', 'previewMode'));
     }
 
     private function isVisible($page): bool
