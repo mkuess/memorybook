@@ -48,7 +48,6 @@ class MemoryPageRemoveTest extends TestCase
         $response->assertSee('Profilseite wirklich entfernen?');
         $response->assertSee('Ja, Profilseite entfernen');
         $response->assertSee('Abbrechen');
-        $response->assertSee('Die Verwaltung kann sie weiterhin einsehen.');
     }
 
     public function test_non_owner_cannot_access_confirmation_page(): void

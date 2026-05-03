@@ -16,7 +16,6 @@
 
                     <p class="text-sm text-[#706B62] leading-relaxed mb-6">
                         Diese Profilseite wird aus deinem Kundenbereich ausgeblendet und ist öffentlich nicht mehr aufrufbar.
-                        Die Verwaltung kann sie weiterhin einsehen.
                     </p>
 
                     <div class="flex flex-col sm:flex-row gap-3">
