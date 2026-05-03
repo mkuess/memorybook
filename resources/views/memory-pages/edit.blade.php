@@ -257,19 +257,21 @@
 
             @if ($orderStatus === 'paid')
 
-                {{-- State: paid → activation controls --}}
+                {{-- State: paid → management controls --}}
                 <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-1">Profilseite aktivieren</h3>
-                        <p class="text-xs text-[#706B62] mb-4">Du kannst deine Profilseite jederzeit aktivieren oder deaktivieren.</p>
+                        <h3 class="text-base font-semibold text-[#2F2E2A] mb-1">Profilseite verwalten</h3>
+                        <p class="text-xs text-[#706B62] mb-4">Deine Profilseite ist freigeschaltet. Du kannst sie jederzeit aktivieren oder deaktivieren.</p>
 
-                        @if ($memoryPage->is_published)
-                            <p class="text-sm text-[#6F7F68] mb-4">
-                                Die Profilseite ist aktiv.
-                                @if ($memoryPage->published_at)
-                                    <span class="text-[#706B62]">({{ $memoryPage->published_at->format('d.m.Y H:i') }})</span>
-                                @endif
-                            </p>
+                        @if ($memoryPage->is_locked)
+                            <div class="rounded bg-[#FDF6F4] border border-[#E8C9C3] px-4 py-3 text-sm text-[#9A4F3F]">
+                                Diese Profilseite wurde durch die Verwaltung vorübergehend gesperrt.
+                            </div>
+                        @elseif ($memoryPage->is_published)
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="w-2 h-2 rounded-full bg-[#6F7F68] shrink-0"></span>
+                                <span class="text-sm font-medium text-[#6F7F68]">Online</span>
+                            </div>
                             <form method="POST" action="{{ route('memory-pages.unpublish', $memoryPage) }}">
                                 @csrf
                                 <button type="submit"
@@ -278,6 +280,10 @@
                                 </button>
                             </form>
                         @else
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="w-2 h-2 rounded-full bg-[#DDD6CA] shrink-0"></span>
+                                <span class="text-sm font-medium text-[#706B62]">Offline</span>
+                            </div>
                             <form method="POST" action="{{ route('memory-pages.publish', $memoryPage) }}">
                                 @csrf
                                 <button type="submit"

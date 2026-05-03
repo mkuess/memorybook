@@ -54,6 +54,8 @@ class CheckoutController extends Controller
             'publication_authorization_confirmed_at' => now(),
         ]);
 
+        $memoryPage->update(['is_published' => true]);
+
         $this->notifyAdmin($order);
 
         return redirect()

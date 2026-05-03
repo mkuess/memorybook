@@ -312,7 +312,18 @@ class CheckoutTest extends TestCase
         $response->assertDontSee('wird geprüft');
     }
 
-    public function test_after_checkout_edit_page_shows_profilseite_aktivieren(): void
+    public function test_after_checkout_memory_page_is_published(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $this->assertTrue($page->fresh()->is_published);
+    }
+
+    public function test_after_checkout_edit_page_shows_profilseite_verwalten(): void
     {
         Mail::fake();
         [$owner, $page] = $this->makeOwnerAndPage();
@@ -323,7 +334,108 @@ class CheckoutTest extends TestCase
         $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Profilseite aktivieren');
+        $response->assertSee('Profilseite verwalten');
+        $response->assertSee('Profilseite deaktivieren');
+        $response->assertDontSee('Bestellung in Bearbeitung');
+    }
+
+    public function test_after_checkout_edit_page_shows_online(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Online');
+    }
+
+    public function test_customer_can_deactivate_profile_after_checkout(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.unpublish', $page))
+            ->assertRedirect();
+
+        $this->assertFalse($page->fresh()->is_published);
+    }
+
+    public function test_customer_can_activate_profile_after_deactivation(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $this->actingAs($owner)->post(route('memory-pages.unpublish', $page));
+        $this->actingAs($owner)->post(route('memory-pages.publish', $page));
+
+        $this->assertTrue($page->fresh()->is_published);
+    }
+
+    public function test_public_page_visible_after_checkout_when_active(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $page->update(['visibility' => 'public']);
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $code = $page->qrCode->short_code;
+        $response = $this->get("/m/{$code}");
+
+        $response->assertOk();
+        $response->assertSee($page->person_name);
+    }
+
+    public function test_public_page_unavailable_when_customer_deactivates(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $page->update(['visibility' => 'public']);
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $this->actingAs($owner)->post(route('memory-pages.unpublish', $page));
+
+        auth()->logout();
+
+        $code = $page->qrCode->short_code;
+        $response = $this->get("/m/{$code}");
+
+        $response->assertSee('nicht verfügbar');
+        $response->assertDontSee($page->person_name);
+    }
+
+    public function test_admin_lock_overrides_customer_activation(): void
+    {
+        Mail::fake();
+        [$owner, $page] = $this->makeOwnerAndPage();
+        $page->update(['visibility' => 'public']);
+
+        $this->actingAs($owner)
+            ->post(route('memory-pages.checkout.store', $page), $this->validPayload());
+
+        $page->update(['is_locked' => true]);
+
+        auth()->logout();
+
+        $code = $page->qrCode->short_code;
+        $response = $this->get("/m/{$code}");
+
+        $response->assertSee('nicht verfügbar');
+        $response->assertDontSee($page->person_name);
     }
 
     public function test_after_checkout_qr_code_link_is_visible(): void
