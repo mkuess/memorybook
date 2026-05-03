@@ -340,6 +340,59 @@ class MemoryPageEditTest extends TestCase
         $this->assertSame($slug, $page->fresh()->slug);
     }
 
+    // --- profilseite aufrufen button ---
+
+    public function test_profilseite_aufrufen_button_is_shown_when_qr_code_exists(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('Profilseite aufrufen');
+    }
+
+    public function test_profilseite_aufrufen_links_to_public_profile_url(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $code = $page->qrCode->short_code;
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee("/m/{$code}", false);
+    }
+
+    public function test_profilseite_aufrufen_opens_in_new_tab(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertSee('target="_blank"', false);
+        $response->assertSee('rel="noopener noreferrer"', false);
+    }
+
+    public function test_profilseite_aufrufen_button_hidden_when_no_qr_code(): void
+    {
+        $user = User::factory()->create();
+        $page = $this->createPageForUser($user);
+        $page->qrCode()->delete();
+
+        $response = $this->actingAs($user)->get(route('memory-pages.edit', $page));
+
+        $response->assertOk();
+        $response->assertDontSee('Profilseite aufrufen');
+        $code = $page->qrCode->short_code ?? null;
+        if ($code) {
+            $response->assertDontSee("/m/{$code}", false);
+        }
+    }
+
     // --- dashboard link ---
 
     public function test_dashboard_links_to_edit_page(): void

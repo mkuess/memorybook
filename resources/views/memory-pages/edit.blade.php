@@ -311,6 +311,17 @@
                            class="inline-flex items-center px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
                             QR-Code anzeigen
                         </a>
+                        @if ($memoryPage->qrCode)
+                            <a href="/m/{{ $memoryPage->qrCode->short_code }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#EFEAE1] border border-[#DDD6CA] rounded font-semibold text-xs text-[#2F2E2A] uppercase tracking-widest hover:bg-[#D8D2C8] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                                Profilseite aufrufen
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
