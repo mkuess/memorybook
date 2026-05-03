@@ -26,7 +26,10 @@ class MemoryPage extends Model
     private static function generateUniqueShortCode(): string
     {
         do {
-            $code = strtolower(Str::random(8));
+            $code = '';
+            for ($i = 0; $i < 8; $i++) {
+                $code .= chr(random_int(65, 90));
+            }
         } while (QrCode::where('short_code', $code)->exists());
 
         return $code;

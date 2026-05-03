@@ -5,11 +5,18 @@ namespace Tests\Feature;
 use App\Models\MemoryPage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class MemoryPageQrInfoTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('public');
+    }
 
     private function makePage(?User $owner = null): MemoryPage
     {
@@ -64,6 +71,30 @@ class MemoryPageQrInfoTest extends TestCase
 
         $response->assertOk();
         $response->assertSee("/m/{$code}");
+    }
+
+    public function test_page_shows_memorybook_at_label(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertSee('memorybook.at/');
+    }
+
+    public function test_page_renders_qr_code_image_tag(): void
+    {
+        $owner = User::factory()->create();
+        $page  = $this->makePage($owner);
+
+        $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
+
+        $response->assertOk();
+        $response->assertSee('<img', false);
+        $page->qrCode->refresh();
+        $this->assertNotNull($page->qrCode->png_path);
     }
 
     public function test_dashboard_links_to_qr_code_page(): void

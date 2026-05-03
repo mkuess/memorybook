@@ -6,41 +6,46 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-sm mx-auto sm:px-6 lg:px-8">
             <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
-                <div class="p-6 space-y-4">
+                <div class="p-8 flex flex-col items-center gap-6">
 
-                    <div>
-                        <dt class="text-sm font-medium text-[#706B62]">Person</dt>
-                        <dd class="mt-1 text-lg text-[#2F2E2A]">{{ $memoryPage->person_name }}</dd>
+                    {{-- QR code image --}}
+                    @if ($qr->png_path && Storage::disk('public')->exists($qr->png_path))
+                        <img
+                            src="{{ Storage::disk('public')->url($qr->png_path) }}"
+                            alt="QR-Code für {{ $memoryPage->person_name }}"
+                            class="w-56 h-56"
+                        >
+                    @endif
+
+                    {{-- Label below QR --}}
+                    <div class="text-center leading-tight">
+                        <p class="text-sm font-medium text-[#706B62]">memorybook.at/</p>
+                        <p class="text-lg font-bold tracking-widest text-[#2F2E2A]">{{ $qr->short_code }}</p>
                     </div>
 
-                    <div>
-                        <dt class="text-sm font-medium text-[#706B62]">QR-Code</dt>
-                        <dd class="mt-1 font-mono text-[#2F2E2A]">{{ $qr->short_code }}</dd>
-                    </div>
+                    {{-- Meta info --}}
+                    <dl class="w-full divide-y divide-[#DDD6CA] text-sm">
+                        <div class="py-3">
+                            <dt class="text-[#706B62]">Öffentliche URL</dt>
+                            <dd class="mt-0.5">
+                                <a href="{{ route('memory-pages.public', $qr->short_code) }}"
+                                   class="text-brand-600 hover:text-brand-700 break-all">
+                                    {{ route('memory-pages.public', $qr->short_code) }}
+                                </a>
+                            </dd>
+                        </div>
+                        <div class="py-3">
+                            <dt class="text-[#706B62]">Aufrufe</dt>
+                            <dd class="mt-0.5 text-[#2F2E2A] font-medium">{{ $qr->scan_count }}</dd>
+                        </div>
+                    </dl>
 
-                    <div>
-                        <dt class="text-sm font-medium text-[#706B62]">Öffentliche URL</dt>
-                        <dd class="mt-1">
-                            <a href="{{ route('memory-pages.public', $qr->short_code) }}"
-                               class="text-brand-600 hover:text-brand-700 break-all">
-                                {{ route('memory-pages.public', $qr->short_code) }}
-                            </a>
-                        </dd>
-                    </div>
-
-                    <div>
-                        <dt class="text-sm font-medium text-[#706B62]">Aufrufe</dt>
-                        <dd class="mt-1 text-[#2F2E2A]">{{ $qr->scan_count }}</dd>
-                    </div>
-
-                    <div class="pt-4">
-                        <a href="{{ route('memory-pages.edit', $memoryPage) }}"
-                           class="text-sm text-[#706B62] hover:text-[#2F2E2A]">
-                            &larr; Zurück zur Bearbeitung
-                        </a>
-                    </div>
+                    <a href="{{ route('memory-pages.edit', $memoryPage) }}"
+                       class="text-sm text-[#706B62] hover:text-[#2F2E2A]">
+                        &larr; Zurück zur Bearbeitung
+                    </a>
 
                 </div>
             </div>
