@@ -32,7 +32,7 @@ class MemoryPageRemoveTest extends TestCase
         $response = $this->actingAs($owner)->get(route('memory-pages.edit', $page));
 
         $response->assertOk();
-        $response->assertSee('Profilseite entfernen');
+        $response->assertSee('Profilseite löschen');
         $response->assertSee(route('memory-pages.remove.confirm', $page), false);
     }
 
@@ -46,7 +46,7 @@ class MemoryPageRemoveTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Profilseite wirklich entfernen?');
-        $response->assertSee('Ja, Profilseite entfernen');
+        $response->assertSee('Ja, Profilseite löschen');
         $response->assertSee('Abbrechen');
     }
 

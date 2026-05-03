@@ -384,16 +384,16 @@
                 </div>
             </div>
 
-            {{-- 6. Profilseite entfernen --}}
+            {{-- 6. Profilseite löschen --}}
             <div class="bg-white border border-[#DDD6CA] sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-base font-semibold text-[#2F2E2A] mb-1">Profilseite entfernen</h3>
+                    <h3 class="text-base font-semibold text-[#2F2E2A] mb-1">Profilseite löschen</h3>
                     <p class="text-xs text-[#706B62] mb-4 leading-relaxed">
                         Diese Profilseite aus deinem Kundenbereich entfernen und öffentlich deaktivieren.
                     </p>
                     <a href="{{ route('memory-pages.remove.confirm', $memoryPage) }}"
                        class="inline-flex items-center px-4 py-2 bg-white border border-[#9A4F3F] rounded font-semibold text-xs text-[#9A4F3F] uppercase tracking-widest hover:bg-[#FDF4F2] focus:outline-none focus:ring-2 focus:ring-[#9A4F3F] focus:ring-offset-2 transition ease-in-out duration-150">
-                        Profilseite entfernen
+                        Profilseite löschen
                     </a>
                 </div>
             </div>
