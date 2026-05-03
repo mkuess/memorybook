@@ -1,0 +1,126 @@
+Please apply the same memorybook.at visual styling to the customer backend area.
+
+Current issue:
+The admin/backend styling has already been adjusted, but the customer backend pages still use the old/default styling. The customer area must visually match the new memorybook design.
+
+Important:
+- Do not change business logic.
+- Do not change routes, models, controllers, database fields, policies, permissions or workflows.
+- Do not remove existing functionality.
+- Only adjust styling, layout polish, CSS classes, theme tokens or shared components.
+- Reuse the existing memorybook color variables/theme where possible.
+- Do not duplicate unnecessary CSS if a shared layout/component solution exists.
+
+Use this color direction:
+
+--mb-bg: #F8F5ED;
+--mb-surface: #FFFFFF;
+--mb-surface-soft: #EFEAE1;
+
+--mb-primary: #8FA7B0;
+--mb-primary-dark: #5F737B;
+
+--mb-secondary: #D8D2C8;
+--mb-secondary-dark: #BFB7AA;
+
+--mb-text: #2F2E2A;
+--mb-muted: #706B62;
+--mb-border: #DDD6CA;
+
+--mb-danger: #9A4F3F;
+--mb-success: #6F7F68;
+--mb-warning: #B08A4A;
+
+Customer backend areas to update:
+1. Customer dashboard
+2. Memory pages list
+3. Create memory page form
+4. Edit memory page form
+5. Story overview
+6. Story create/edit pages
+7. QR code page
+8. Plaque request page
+9. Account/settings pages
+10. Empty states, alerts and validation messages
+
+Styling requirements:
+- Main background: #F8F5ED
+- Cards/panels: #FFFFFF or #EFEAE1
+- Main text: #2F2E2A
+- Secondary text: #706B62
+- Borders/dividers: #DDD6CA
+- Primary actions: #8FA7B0
+- Primary hover/active: #5F737B
+- Secondary neutral areas: #D8D2C8
+- Buttons must be square or only slightly rounded, max border-radius 4px or 6px.
+- Avoid pill-shaped buttons unless required by the component.
+- Use calm, clear spacing.
+- Forms must be easy to read and not feel cramped.
+- Status badges should be subtle and readable.
+
+Button styling:
+Primary button:
+- Background: #8FA7B0
+- Hover: #5F737B
+- Text: #FFFFFF
+- Border radius: 4px or 6px
+
+Secondary button:
+- Background: #EFEAE1 or transparent
+- Border: #DDD6CA
+- Text: #2F2E2A
+- Hover background: #D8D2C8
+- Border radius: 4px or 6px
+
+Danger button:
+- Background: #9A4F3F
+- Hover: slightly darker
+- Text: #FFFFFF
+- Border radius: 4px or 6px
+
+Status badge colors:
+- Published / approved / released: #6F7F68
+- Not published / draft: #706B62
+- Locked / blocked: #9A4F3F
+- Private: #706B62
+- Link only: #B08A4A
+- Public: #5F737B
+- In review: #B08A4A
+
+Implementation instructions:
+- First identify the customer backend layout file, likely something like:
+  resources/views/layouts/app.blade.php
+  resources/views/customer/layout.blade.php
+  resources/views/customer/*
+  resources/views/dashboard.blade.php
+  resources/css/app.css
+  tailwind.config.js
+
+- Check if shared Blade components are used for buttons, cards, inputs, tables or alerts.
+- Prefer updating shared components and layout classes instead of changing every page individually.
+- If there are customer-specific Blade views with old Tailwind classes, update them to use the memorybook color system.
+- Ensure the customer backend and admin backend feel visually related but still simple and lightweight.
+
+Please specifically check and update:
+- Body/background color
+- Navigation/header/sidebar if present
+- Page headings
+- Cards
+- Tables
+- Forms
+- Inputs
+- Buttons
+- Badges
+- Alerts
+- Empty states
+- Links
+- Hover/focus states
+
+Acceptance criteria:
+- Customer dashboard no longer uses the old/default framework look.
+- Customer backend visually matches the memorybook design language.
+- Buttons are no longer overly rounded.
+- Background is soft cream-white.
+- Main colors are blue-grey and warm light-grey.
+- Forms and tables are readable and calm.
+- No functionality has been changed.

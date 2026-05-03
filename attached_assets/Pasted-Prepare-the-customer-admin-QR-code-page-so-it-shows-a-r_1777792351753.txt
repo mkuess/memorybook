@@ -1,0 +1,65 @@
+Prepare the customer/admin QR code page so it shows a real QR code image.
+
+Current issue:
+- The "QR-Code anzeigen" subpage exists, but it does not display an actual QR code yet.
+
+Desired behavior:
+- On the QR code page, show a generated QR code image for the public memory page URL.
+- The QR code should encode the public profile URL of the memory page.
+- The displayed URL format should be based on the short code route.
+
+Requirements:
+- use the existing QR code / memory page relationship
+- generate and store a QR code image if it does not exist yet
+- use a simple, robust PHP QR code solution compatible with Laravel 11
+- do not introduce Replit-specific production dependencies
+- keep it runnable later on the standalone server
+- if suitable, save generated files on the public disk
+- use existing qr code fields if present (such as short_code, png_path, svg_path)
+
+Short code rules:
+- generate short codes using uppercase letters only
+- do not use lowercase letters
+- if numbers are already used in the current logic, they may remain only if needed
+- preferred format: uppercase A-Z only
+- make sure generated short codes remain unique
+- update generation logic so newly created QR codes use uppercase only
+- if necessary, normalize existing newly created codes to uppercase going forward
+- do not break existing already stored QR codes
+
+QR page output:
+- show the QR code image centered
+- below the QR code show two lines of text:
+  - first line: "memorybook.at/"
+  - second line: the short code
+- the short code line should use the actual code from the record
+- layout should be clean and centered
+- mobile-friendly first
+
+URL logic:
+- QR code content should point to the public profile URL using the short code route
+- keep existing public route behavior intact
+- if APP_URL is used internally, the visible text below the QR image should still be:
+  - memorybook.at/
+  - SHORTCODE
+
+Do not:
+- do not change customer auth logic
+- do not change public page logic except using the correct QR target URL
+- do not add PDF export yet unless very simple
+- do not add download buttons yet unless already trivial
+
+Tests:
+- add/update tests proving:
+  - a QR code image is generated for a memory page
+  - the QR code record stores the path to the image if applicable
+  - newly generated short codes are uppercase
+  - the QR code page renders the QR code image
+  - the QR code page renders:
+    - "memorybook.at/"
+    - the short code on a second line
+  - existing public route /m/{short_code} still works
+
+Run:
+- php artisan test
+- show changed files and test results
