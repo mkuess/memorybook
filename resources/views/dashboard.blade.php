@@ -29,8 +29,8 @@
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-[#706B62] uppercase tracking-wider">
                                     <th class="px-6 py-3">Name</th>
-                                    <th class="px-6 py-3">Storys</th>
-                                    <th class="px-6 py-3">Freigegeben</th>
+                                    <th class="px-6 py-3">Erinnerungen</th>
+                                    <th class="px-6 py-3">Status</th>
                                     <th class="px-6 py-3 text-right">Aktionen</th>
                                 </tr>
                             </thead>
@@ -50,10 +50,25 @@
                                             </a>
                                         </td>
                                         <td class="px-6 py-4">
-                                            @if ($page->is_published)
-                                                <span class="text-[#6F7F68] font-medium">Ja</span>
+                                            @if ($page->isOnline())
+                                                <span class="inline-flex items-center gap-1.5">
+                                                    <span class="w-2 h-2 rounded-full bg-[#6F7F68] shrink-0"></span>
+                                                    <span class="text-[#6F7F68] font-medium">Online</span>
+                                                </span>
                                             @else
-                                                <span class="text-[#706B62]">Nein</span>
+                                                <span class="inline-flex items-center gap-1.5 flex-wrap">
+                                                    <span class="w-2 h-2 rounded-full bg-[#DDD6CA] shrink-0"></span>
+                                                    <span class="text-[#706B62]">Offline</span>
+                                                    @if ($page->is_locked)
+                                                        <span class="text-xs text-[#9A4F3F]">Durch Verwaltung gesperrt</span>
+                                                    @elseif (! $page->orders->contains('status', 'paid'))
+                                                        <span class="text-xs text-[#706B62]">Bestellung fehlt</span>
+                                                    @elseif (! $page->is_published)
+                                                        <span class="text-xs text-[#706B62]">Noch nicht aktiviert</span>
+                                                    @elseif ($page->visibility === 'private')
+                                                        <span class="text-xs text-[#706B62]">Privat</span>
+                                                    @endif
+                                                </span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4">
@@ -99,18 +114,23 @@
                                 </a>
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#706B62]">
                                     <span>
-                                        Storys:
+                                        Erinnerungen:
                                         <a href="{{ route('memory-pages.stories.index', $page) }}"
                                            class="text-brand-600 hover:text-brand-700 font-medium">
                                             {{ $page->stories_count }}
                                         </a>
                                     </span>
                                     <span>
-                                        Freigegeben:
-                                        @if ($page->is_published)
-                                            <span class="text-[#6F7F68] font-medium">Ja</span>
+                                        @if ($page->isOnline())
+                                            <span class="inline-flex items-center gap-1">
+                                                <span class="w-2 h-2 rounded-full bg-[#6F7F68] shrink-0"></span>
+                                                <span class="text-[#6F7F68] font-medium">Online</span>
+                                            </span>
                                         @else
-                                            <span class="text-[#706B62]">Nein</span>
+                                            <span class="inline-flex items-center gap-1">
+                                                <span class="w-2 h-2 rounded-full bg-[#DDD6CA] shrink-0"></span>
+                                                <span>Offline</span>
+                                            </span>
                                         @endif
                                     </span>
                                     @if ($page->qrCode)

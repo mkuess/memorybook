@@ -1,0 +1,51 @@
+Update the customer dashboard memory page list to show whether each profile is online or offline.
+
+Current situation:
+- The customer dashboard list currently has a column "Freigegeben".
+- This only reflects the customer publish flag and is not enough.
+- We need a clearer overall online status.
+
+Requirements:
+- Replace or supplement the current "Freigegeben" column with a column labeled "Status".
+- For each memory page show:
+  - "Online" if all conditions are true:
+    - the page has an eligible paid/approved order or checkout entitlement
+    - memoryPage.is_published is true
+    - memoryPage.is_locked is false
+    - visibility is link or public
+  - "Offline" otherwise
+- Do not expose detailed admin internals to the customer unless needed.
+- If helpful, add a short secondary reason in small text:
+  - "Noch nicht aktiviert"
+  - "Bestellung fehlt"
+  - "Privat"
+  - "Durch Verwaltung gesperrt"
+- Keep wording German and customer-friendly.
+- Keep the existing "Storys"/"Erinnerungen" count column, but if terminology was already changed, use "Erinnerungen".
+- Keep action links:
+  - QR-Code
+  - Profil aufrufen
+- The "Profil aufrufen" link may remain visible if owner-preview is allowed, but the status must still show Online/Offline correctly.
+- Avoid N+1 queries:
+  - eager-load or compute order entitlement efficiently if practical.
+- Keep layout mobile-friendly.
+
+Do not change:
+- public route behavior
+- checkout/order behavior
+- admin area
+- QR code generation
+- database fields unless absolutely necessary
+
+Tests:
+- dashboard shows "Online" when order is eligible, is_published is true, is_locked is false, and visibility is link/public
+- dashboard shows "Offline" when no eligible order exists
+- dashboard shows "Offline" when is_published is false
+- dashboard shows "Offline" when is_locked is true
+- dashboard shows "Offline" when visibility is private
+- dashboard no longer relies only on the old Freigegeben column
+- action links still render correctly
+
+Run:
+- php artisan test
+- show changed files and test results

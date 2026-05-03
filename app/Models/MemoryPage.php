@@ -97,6 +97,18 @@ class MemoryPage extends Model
         return $this->orders()->where('status', 'paid')->exists();
     }
 
+    public function isOnline(): bool
+    {
+        $hasPaidOrder = $this->relationLoaded('orders')
+            ? $this->orders->contains('status', 'paid')
+            : $this->orders()->where('status', 'paid')->exists();
+
+        return $hasPaidOrder
+            && $this->is_published
+            && ! $this->is_locked
+            && in_array($this->visibility, ['link', 'public']);
+    }
+
     public function plaqueOrders(): HasMany
     {
         return $this->hasMany(PlaqueOrder::class);

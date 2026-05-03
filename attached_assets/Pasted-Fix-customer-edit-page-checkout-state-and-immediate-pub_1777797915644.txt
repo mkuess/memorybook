@@ -1,0 +1,82 @@
+Fix customer edit page checkout state and immediate publication entitlement.
+
+Current issue:
+- On "Erinnerungsseite bearbeiten", after checkout the page still shows a message like:
+  "Bestellung in Bearbeitung"
+- This is wrong for the MVP.
+- After checkout, the customer has confirmed a paid order.
+- The memory page should be immediately eligible and active by default.
+- QR code access should be available immediately after checkout.
+
+Desired behavior:
+1. Before checkout:
+- show the checkout CTA:
+  "Veröffentlichung bestellen"
+- do not show QR-Code access if the current intended rule hides it before checkout
+- do not show activation/deactivation controls
+
+2. After successful checkout:
+- immediately mark the order as paid or approved, using the existing status that means eligible
+- set memoryPage.is_published = true by default after checkout
+- hide all messages like:
+  "Bestellung in Bearbeitung"
+  "Bestellung wird geprüft"
+  "Sobald die Veröffentlichung freigegeben ist ..."
+- show a customer publication control section instead:
+  title: "Profilseite verwalten"
+  text: "Deine Profilseite ist freigeschaltet. Du kannst sie jederzeit aktivieren oder deaktivieren."
+- if memoryPage.is_published is true:
+  - show status "Online"
+  - show button "Profilseite deaktivieren"
+- if memoryPage.is_published is false:
+  - show status "Offline"
+  - show button "Profilseite aktivieren"
+
+3. QR-Code:
+- after checkout, show the QR-Code link/action on the customer edit page
+- QR-Code page must be accessible immediately after checkout
+- do not require admin approval for QR-Code access after checkout
+
+4. Admin lock remains separate:
+- if memoryPage.is_locked is true:
+  - public profile remains unavailable
+  - customer should see a calm message:
+    "Diese Profilseite wurde durch die Verwaltung vorübergehend gesperrt."
+  - customer should not be able to override admin lock
+- do not treat "not paid yet" as admin lock
+
+5. Public route:
+- public profile should be visible when:
+  - eligible paid/approved order exists
+  - memoryPage.is_published = true
+  - memoryPage.is_locked = false
+  - visibility is link or public
+- owner preview behavior may remain unchanged
+
+6. Terminology:
+- do not use "Bestellung in Bearbeitung" after checkout
+- use:
+  - "Profilseite verwalten"
+  - "Online"
+  - "Offline"
+  - "Profilseite aktivieren"
+  - "Profilseite deaktivieren"
+
+7. Tests:
+- before checkout, edit page shows checkout CTA
+- after checkout, order status is paid/approved immediately
+- after checkout, memoryPage.is_published is true by default
+- after checkout, edit page does not show "Bestellung in Bearbeitung"
+- after checkout, edit page does not show "wird geprüft"
+- after checkout, edit page shows "Profilseite verwalten"
+- after checkout, edit page shows "Online"
+- after checkout, QR-Code link is visible
+- customer can deactivate profile page after checkout
+- customer can activate profile page again after checkout
+- public page is visible after checkout when active and not locked
+- public page is unavailable when customer deactivates it
+- admin lock still overrides customer activation
+
+Run:
+- php artisan test
+- show changed files and test results

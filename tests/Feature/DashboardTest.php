@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\MemoryPage;
+use App\Models\Order;
 use App\Models\QrCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,6 +23,23 @@ class DashboardTest extends TestCase
         ], $pageAttrs));
 
         return [$user, $page];
+    }
+
+    private function createPaidOrder(User $user, MemoryPage $page): Order
+    {
+        return Order::create([
+            'user_id'         => $user->id,
+            'memory_page_id'  => $page->id,
+            'status'          => 'paid',
+            'package'         => 'basic',
+            'billing_name'    => 'Test User',
+            'billing_email'   => $user->email,
+            'billing_address' => 'Musterstraße 1',
+            'billing_postal_code' => '12345',
+            'billing_city'    => 'Musterstadt',
+            'billing_country' => 'DE',
+            'consent_given_at' => now(),
+        ]);
     }
 
     // --- access ---
@@ -98,46 +116,120 @@ class DashboardTest extends TestCase
         $response->assertSee(route('memory-pages.stories.index', $page), false);
     }
 
-    // --- published column ---
+    // --- status column ---
 
-    public function test_dashboard_shows_ja_for_published_pages(): void
-    {
-        [$user] = $this->makeUserWithPage(['is_published' => true]);
-
-        $response = $this->actingAs($user)->get(route('dashboard'));
-
-        $response->assertOk();
-        $response->assertSee('Ja');
-    }
-
-    public function test_dashboard_shows_nein_for_unpublished_pages(): void
-    {
-        [$user] = $this->makeUserWithPage(['is_published' => false]);
-
-        $response = $this->actingAs($user)->get(route('dashboard'));
-
-        $response->assertOk();
-        $response->assertSee('Nein');
-    }
-
-    public function test_dashboard_shows_freigegeben_column_header(): void
+    public function test_dashboard_shows_status_column_header(): void
     {
         [$user] = $this->makeUserWithPage();
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Freigegeben');
+        $response->assertSee('Status');
     }
 
-    public function test_dashboard_shows_storys_column_header(): void
+    public function test_dashboard_shows_erinnerungen_column_header(): void
     {
         [$user] = $this->makeUserWithPage();
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Storys');
+        $response->assertSee('Erinnerungen');
+    }
+
+    public function test_dashboard_shows_online_when_all_conditions_met(): void
+    {
+        [$user, $page] = $this->makeUserWithPage([
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'public',
+        ]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Online');
+        $response->assertDontSee('Offline');
+    }
+
+    public function test_dashboard_shows_online_when_visibility_is_link(): void
+    {
+        [$user, $page] = $this->makeUserWithPage([
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'link',
+        ]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Online');
+    }
+
+    public function test_dashboard_shows_offline_when_no_paid_order(): void
+    {
+        [$user] = $this->makeUserWithPage([
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'public',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertDontSee('Online');
+    }
+
+    public function test_dashboard_shows_offline_when_not_published(): void
+    {
+        [$user, $page] = $this->makeUserWithPage([
+            'is_published' => false,
+            'is_locked'    => false,
+            'visibility'   => 'public',
+        ]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertDontSee('Online');
+    }
+
+    public function test_dashboard_shows_offline_when_locked(): void
+    {
+        [$user, $page] = $this->makeUserWithPage([
+            'is_published' => true,
+            'is_locked'    => true,
+            'visibility'   => 'public',
+        ]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertDontSee('Online');
+    }
+
+    public function test_dashboard_shows_offline_when_visibility_is_private(): void
+    {
+        [$user, $page] = $this->makeUserWithPage([
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'private',
+        ]);
+        $this->createPaidOrder($user, $page);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertDontSee('Online');
     }
 
     // --- no admin fields ---

@@ -10,7 +10,7 @@ class DashboardController extends Controller
     {
         $memoryPages = auth()->user()->memoryPages()
             ->withCount('stories')
-            ->with('qrCode')
+            ->with(['qrCode', 'orders' => fn ($q) => $q->where('status', 'paid')])
             ->latest()
             ->get();
 
