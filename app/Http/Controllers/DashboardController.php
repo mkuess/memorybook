@@ -9,6 +9,7 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $memoryPages = auth()->user()->memoryPages()
+            ->whereNull('customer_removed_at')
             ->withCount('stories')
             ->with(['qrCode', 'orders' => fn ($q) => $q->where('status', 'paid')])
             ->latest()

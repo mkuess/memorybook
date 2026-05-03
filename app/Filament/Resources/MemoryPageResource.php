@@ -192,6 +192,27 @@ class MemoryPageResource extends Resource
                 Infolists\Components\TextEntry::make('created_at')
                     ->label('Erstellt am')
                     ->dateTime('d.m.Y H:i'),
+
+                Infolists\Components\Group::make([
+                    Infolists\Components\TextEntry::make('customer_removed_at')
+                        ->label('Vom Kunden entfernt')
+                        ->dateTime('d.m.Y H:i')
+                        ->placeholder('–')
+                        ->badge()
+                        ->color(fn (MemoryPage $record): string => $record->customer_removed_at ? 'danger' : 'gray'),
+
+                    Infolists\Components\Actions::make([
+                        Infolists\Components\Actions\Action::make('restore_customer')
+                            ->label('Für Kunden wiederherstellen')
+                            ->icon('heroicon-o-arrow-uturn-left')
+                            ->color('warning')
+                            ->visible(fn (MemoryPage $record): bool => $record->customer_removed_at !== null)
+                            ->requiresConfirmation()
+                            ->action(function (MemoryPage $record): void {
+                                $record->update(['customer_removed_at' => null]);
+                            }),
+                    ]),
+                ]),
             ]);
     }
 
@@ -225,6 +246,15 @@ class MemoryPageResource extends Resource
                 Tables\Columns\IconColumn::make('is_locked')
                     ->label('Gesperrt')
                     ->boolean(),
+
+                Tables\Columns\IconColumn::make('customer_removed')
+                    ->label('Entfernt')
+                    ->state(fn (MemoryPage $record): bool => $record->customer_removed_at !== null)
+                    ->boolean()
+                    ->trueIcon('heroicon-o-trash')
+                    ->falseIcon('heroicon-o-minus')
+                    ->trueColor('danger')
+                    ->falseColor('gray'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Erstellt')

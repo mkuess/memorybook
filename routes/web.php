@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/memory-pages/{memoryPage}/visibility', [MemoryPageController::class, 'updateVisibility'])->name('memory-pages.update-visibility');
     Route::post('/memory-pages/{memoryPage}/publish', [MemoryPageController::class, 'publish'])->name('memory-pages.publish');
     Route::post('/memory-pages/{memoryPage}/unpublish', [MemoryPageController::class, 'unpublish'])->name('memory-pages.unpublish');
+    Route::get('/memory-pages/{memoryPage}/remove', [MemoryPageController::class, 'removeConfirm'])->name('memory-pages.remove.confirm');
+    Route::post('/memory-pages/{memoryPage}/remove', [MemoryPageController::class, 'remove'])->name('memory-pages.remove');
     Route::get('/memory-pages/{memoryPage}/checkout', [\App\Http\Controllers\CheckoutController::class, 'create'])->name('memory-pages.checkout');
     Route::post('/memory-pages/{memoryPage}/checkout', [\App\Http\Controllers\CheckoutController::class, 'store'])->name('memory-pages.checkout.store');
     Route::get('/memory-pages/{memoryPage}/checkout/confirmed', [\App\Http\Controllers\CheckoutController::class, 'confirmed'])->name('memory-pages.checkout.confirmed');

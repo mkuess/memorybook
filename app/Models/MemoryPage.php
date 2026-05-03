@@ -47,6 +47,7 @@ class MemoryPage extends Model
         'is_locked',
         'consent_confirmed_at',
         'published_at',
+        'customer_removed_at',
     ];
 
     protected $attributes = [
@@ -64,7 +65,13 @@ class MemoryPage extends Model
             'is_locked'            => 'boolean',
             'consent_confirmed_at' => 'datetime',
             'published_at'         => 'datetime',
+            'customer_removed_at'  => 'datetime',
         ];
+    }
+
+    public function isCustomerRemoved(): bool
+    {
+        return $this->customer_removed_at !== null;
     }
 
     public function user(): BelongsTo

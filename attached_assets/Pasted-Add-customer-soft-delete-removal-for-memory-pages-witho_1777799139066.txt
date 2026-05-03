@@ -1,0 +1,88 @@
+Add customer soft-delete/removal for memory pages without removing admin access.
+
+Goal:
+- Customers should be able to remove a memory page from their customer dashboard.
+- This should NOT permanently delete the database record.
+- The page should become publicly unavailable/offline.
+- Admins should still see and edit the memory page in Filament.
+
+Terminology:
+- Customer-facing label should be:
+  "Profilseite löschen"
+  or better:
+  "Profilseite entfernen"
+- Use a confirmation step before applying it.
+
+Behavior:
+- On the customer MemoryPage edit page:
+  - add a destructive action/button near the bottom:
+    "Profilseite entfernen"
+  - show a confirmation prompt/page/modal before removing:
+    title: "Profilseite wirklich entfernen?"
+    text: "Diese Profilseite wird aus deinem Kundenbereich ausgeblendet und ist öffentlich nicht mehr aufrufbar. Die Verwaltung kann sie weiterhin einsehen."
+    confirmation button: "Ja, Profilseite entfernen"
+    cancel button: "Abbrechen"
+
+When confirmed:
+- do not hard-delete the memory page
+- set the memory page so it is publicly unavailable:
+  - is_published = false
+  - visibility = private
+- mark it as removed for the customer so it no longer appears in their customer dashboard/list
+- recommended implementation:
+  - add nullable timestamp field customer_removed_at to memory_pages
+  - set customer_removed_at = now()
+- do not set is_locked unless the existing logic requires it; admin lock should remain separate
+- redirect customer to dashboard with message:
+  "Profilseite wurde entfernt."
+
+Customer dashboard:
+- hide memory pages where customer_removed_at is not null
+- customer should no longer see the removed profile in the list
+- customer should not access the edit page of removed memory pages
+  - return 404 or 403 with existing pattern
+
+Public profile:
+- removed memory pages must show the existing unavailable message
+- do not reveal profile data, gallery, or memories publicly
+
+Admin area:
+- Filament MemoryPageResource should still list removed memory pages
+- admin can still view and edit removed memory pages
+- in admin list/detail, show a clear status/field:
+  - "Vom Kunden entfernt"
+  - show customer_removed_at if present
+- optionally allow admin to restore it if simple:
+  - action "Für Kunden wiederherstellen"
+  - sets customer_removed_at = null
+  - does not automatically publish it
+- do not add hard delete action
+
+Do not change:
+- QR code records
+- media records
+- story/memory records
+- orders
+- checkout logic
+- admin lock behavior
+- public route URL structure
+
+Tests:
+- customer edit page shows "Profilseite entfernen"
+- customer must confirm before removal where practical
+- owner can remove their own memory page
+- non-owner cannot remove another user's memory page
+- removing sets is_published = false
+- removing sets visibility = private
+- removing sets customer_removed_at
+- removed memory page disappears from customer dashboard
+- removed memory page is not publicly visible
+- admin can still see removed memory page in Filament list/detail
+- admin list/detail shows "Vom Kunden entfernt"
+- admin can still edit removed memory page
+- if restore action is implemented:
+  - admin can restore customer_removed_at to null
+
+Run:
+- php artisan test
+- show changed files and test results

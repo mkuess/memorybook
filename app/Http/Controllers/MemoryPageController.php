@@ -36,6 +36,7 @@ class MemoryPageController extends Controller
     public function edit(MemoryPage $memoryPage): View
     {
         Gate::allowIf(auth()->id() === $memoryPage->user_id);
+        abort_if($memoryPage->isCustomerRemoved(), 404);
 
         $profilePhoto  = $memoryPage->media()->where('collection', 'profile')->first();
         $galleryImages = $memoryPage->media()
@@ -104,6 +105,29 @@ class MemoryPageController extends Controller
         ]);
 
         return redirect()->route('memory-pages.edit', $memoryPage);
+    }
+
+    public function removeConfirm(MemoryPage $memoryPage): View
+    {
+        Gate::allowIf(auth()->id() === $memoryPage->user_id);
+        abort_if($memoryPage->isCustomerRemoved(), 404);
+
+        return view('memory-pages.remove-confirm', compact('memoryPage'));
+    }
+
+    public function remove(MemoryPage $memoryPage): RedirectResponse
+    {
+        Gate::allowIf(auth()->id() === $memoryPage->user_id);
+        abort_if($memoryPage->isCustomerRemoved(), 404);
+
+        $memoryPage->update([
+            'is_published'        => false,
+            'visibility'          => 'private',
+            'customer_removed_at' => now(),
+        ]);
+
+        return redirect()->route('dashboard')
+            ->with('removed_success', 'Profilseite wurde entfernt.');
     }
 
     private function generateUniqueSlug(): string
