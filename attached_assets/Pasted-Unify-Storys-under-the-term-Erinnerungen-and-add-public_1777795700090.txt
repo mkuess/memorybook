@@ -1,0 +1,135 @@
+Unify "Storys" under the term "Erinnerungen" and add public visitor memory submission with email confirmation.
+
+Goal:
+- The product wording should consistently use "Erinnerungen" instead of "Storys".
+- Customers manage memories for a memory page.
+- Public visitors should be able to leave a memory after the page is eligible/published.
+- Visitor memories must not go live immediately; they require email confirmation first.
+
+Terminology:
+- Replace customer-facing labels:
+  - "Storys verwalten" -> "Erinnerungen verwalten"
+  - "Story erstellen" -> "Erinnerung hinzufügen"
+  - "Neue Story" -> "Neue Erinnerung"
+  - "Storys" -> "Erinnerungen"
+- Internal model names may remain Story if changing them is too risky.
+- Do not rename database tables/models unless absolutely necessary.
+- Prefer changing labels, routes labels, headings, buttons, and view text only.
+
+Customer memory management:
+- On the customer area page for adding/editing memories:
+  - remove the "Titel" field from the customer-facing form
+  - keep only:
+    - Inhalt / Text field, required
+    - optional image upload field
+- Each Erinnerung should have:
+  - content required
+  - optional image
+  - is_published status as already existing or equivalent
+- If internal Story model still requires title:
+  - generate a simple internal title automatically, for example:
+    "Erinnerung vom {date}"
+  - do not show this title field to the customer
+- Add/keep support for one image per Erinnerung:
+  - accepted: jpg, jpeg, png, webp
+  - max 5 MB
+  - store robustly using normal Laravel upload, not Livewire FileUpload if avoidable
+- Do not add multiple images per Erinnerung.
+
+Public profile page:
+- On the public /m/{code} profile page:
+  - keep existing "Profil teilen" button
+  - add a second button next to it:
+    "Erinnerung hinterlassen"
+- Show "Erinnerung hinterlassen" only when:
+  - the memory page is publicly visible
+  - and the required checkout/order is completed/paid/approved
+  - and the page is not admin-locked
+- Do not show this button on unavailable/private/unpublished/locked pages.
+- Do not show this button for pages that are only owner-preview and not publicly active yet.
+
+Visitor memory submission:
+- Add a public form page for visitors, for example:
+  /m/{short_code}/erinnerung-hinterlassen
+- The page should be calm, simple, mobile-first.
+- Fields:
+  - Erinnerung / Inhalt textarea, required
+  - optional image upload
+  - email address, required
+  - required checkbox for privacy/terms consent
+- Email help text:
+  "Deine E-Mail-Adresse wird nicht öffentlich angezeigt. Sie wird nur zur Bestätigung deiner Erinnerung verwendet."
+- Checkbox label placeholder:
+  "Ich akzeptiere die Datenschutzbestimmungen und bestätige, dass ich diese Erinnerung veröffentlichen darf."
+- Add a clear TODO/comment that final legal wording must be reviewed before production.
+
+Visitor memory behavior:
+- Submitted visitor memory must NOT be visible immediately.
+- Store it with a status such as:
+  - pending_email_confirmation
+  - published after confirmation
+- Send confirmation email to the submitted email address.
+- Email should contain a signed/secure confirmation link.
+- When visitor clicks confirmation link:
+  - mark the memory as confirmed/published
+  - show confirmation page:
+    "Danke, deine Erinnerung wurde veröffentlicht."
+- If mail is not configured:
+  - do not crash the app
+  - log safely or show a development-friendly message
+  - keep tests stable
+
+Security / anti-abuse:
+- Do not expose submitted email publicly.
+- Store email only for confirmation/abuse prevention.
+- Use signed URLs or secure random tokens for confirmation.
+- Confirmation link should expire if simple to implement, e.g. after 7 days.
+- Add basic validation and rate limiting if simple.
+- Do not allow HTML/script injection in public memory content.
+- Render content safely escaped.
+
+Public display:
+- Confirmed visitor memories should appear on the public profile page with the other Erinnerungen.
+- Show:
+  - memory content
+  - optional image
+- Do not show visitor email.
+- Keep layout mobile-friendly and respectful.
+- Existing customer-created/published Erinnerungen should still display.
+
+Customer/Admin management:
+- Customer should see all Erinnerungen for their own memory page in the customer management area.
+- Clearly show status:
+  - Veröffentlicht
+  - Wartet auf E-Mail-Bestätigung
+- Admin can review these records if an admin story/memory management page already exists.
+- Do not add complex moderation workflow yet unless needed.
+- Do not add comments/replies.
+
+Checkout relation:
+- The public "Erinnerung hinterlassen" button should only be visible after the memory page has an eligible paid/approved order.
+- Use the existing checkout/order eligibility logic.
+- Do not automatically publish pages after checkout.
+
+Tests:
+- customer-facing pages use "Erinnerungen" instead of "Storys"
+- customer create memory form no longer shows title field
+- customer can create Erinnerung with content only
+- customer can create Erinnerung with optional image
+- public profile page shows "Erinnerung hinterlassen" only for eligible published pages
+- public profile page does not show visitor memory button for unavailable/private/unpublished/locked pages
+- visitor can access public Erinnerung form for eligible page
+- visitor form requires content
+- visitor form requires email
+- visitor form requires privacy/terms checkbox
+- visitor submission is not published immediately
+- confirmation link publishes/activates the submitted Erinnerung
+- public page shows confirmed visitor Erinnerung
+- public page does not show unconfirmed visitor Erinnerung
+- visitor email is not rendered publicly
+- existing published Erinnerungen still render correctly
+
+Run:
+- php artisan test
+- npm run build if CSS/JS changed
+- show changed files and test/build results

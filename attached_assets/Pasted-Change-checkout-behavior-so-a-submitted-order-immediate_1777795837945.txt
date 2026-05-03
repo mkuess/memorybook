@@ -1,0 +1,78 @@
+Change checkout behavior so a submitted order immediately enables customer publication controls.
+
+Current issue:
+- After checkout, the customer edit page shows:
+  "Bestellung eingegangen ... wird geprüft ..."
+- This is not desired for the MVP.
+- The customer has already confirmed the paid order, so the memory page should become eligible for publication immediately.
+
+Desired behavior:
+- Before checkout:
+  - show checkout CTA "Veröffentlichung bestellen"
+  - do not show publish/activate controls
+- After successful checkout submission:
+  - create the order
+  - mark the order as immediately publication-eligible
+  - show customer controls to activate/deactivate the page
+  - do not show "Bestellung wird geprüft" message
+- The customer needs access to QR code and profile activation immediately after checkout.
+
+Terminology:
+- On the customer edit page after checkout, do not use "Veröffentlichen" if "Aktivieren/Deaktivieren" is clearer.
+- Show a section:
+  title: "Profilseite aktivieren"
+- If memoryPage.is_published is false:
+  - show button "Profilseite aktivieren"
+- If memoryPage.is_published is true:
+  - show button "Profilseite deaktivieren"
+- Optional helper text:
+  "Du kannst deine Profilseite jederzeit aktivieren oder deaktivieren."
+
+Checkout/order status:
+- Use the existing Order status model.
+- On successful checkout, set status to a value that means immediately usable.
+- If existing statuses include "paid", set status = paid.
+- If existing statuses include "approved", set status = approved.
+- If both exist, prefer "paid" for invoice-based immediate entitlement.
+- Do not require manual admin approval before customer can activate the profile page.
+- Do not automatically set memoryPage.is_published = true unless already intended.
+- Customer should decide by clicking activate/deactivate.
+
+QR-Code visibility:
+- After successful checkout, show the QR-Code action/link on the customer edit page.
+- Before checkout, hide QR-Code action/link if that is the current intended rule.
+
+Admin:
+- Admin order area may still show orders and status.
+- Do not remove admin ability to review orders.
+- Do not change admin lock/is_locked behavior.
+- Admin lock still overrides public visibility.
+
+Public route rules:
+- Public page is visible when:
+  - memoryPage.is_published = true
+  - memoryPage.is_locked = false
+  - visibility is link or public
+- Owner preview behavior can remain unchanged.
+
+Remove/replace message:
+- Replace the post-checkout "Bestellung eingegangen und wird geprüft" box with the activation management section.
+- If you need to show confirmation, use:
+  "Deine Bestellung ist eingegangen. Du kannst deine Profilseite jetzt aktivieren."
+
+Tests:
+- before checkout, customer edit page shows checkout CTA
+- before checkout, customer edit page does not show activate/deactivate controls
+- after checkout, order status is paid or approved according to the chosen existing status
+- after checkout, customer edit page does not show "wird geprüft"
+- after checkout, customer edit page shows "Profilseite aktivieren" when is_published is false
+- after checkout, customer can activate the profile page
+- after checkout and active page, customer edit page shows "Profilseite deaktivieren"
+- customer can deactivate the profile page
+- after checkout, QR-Code link/action is visible
+- public page only becomes visible after customer activates it
+- admin lock still prevents public visibility
+
+Run:
+- php artisan test
+- show changed files and test results
