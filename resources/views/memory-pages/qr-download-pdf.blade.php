@@ -11,12 +11,21 @@ body {
     padding: 24pt;
 }
 
-/* ── LANDSCAPE CARD ── */
+/* ── LANDSCAPE CARD ─────────────────────────────────────────────────────────
+   Layout constants:
+     card width  : 340pt  (compact, centered on A4)
+     card padding: 10pt vertical / 12pt horizontal
+     QR column   : 42% of inner width  ≈ 132pt → QR image 118pt
+     gap         : 8pt  (padding-right on left cell only)
+     right column: 58% of inner width
+     logo width  : 100pt
+   ────────────────────────────────────────────────────────────────────────── */
 .ls-wrap {
     border: 2pt solid #8FA7B0;
     border-radius: 12pt;
-    padding: 16pt;
-    margin-bottom: 28pt;
+    padding: 10pt 12pt;
+    width: 340pt;
+    margin: 0 auto 28pt;
 }
 .ls-inner {
     display: table;
@@ -24,15 +33,27 @@ body {
 }
 .ls-left {
     display: table-cell;
-    width: 55%;
+    width: 42%;
     vertical-align: middle;
+    padding-right: 8pt;
 }
 .ls-right {
     display: table-cell;
-    width: 45%;
+    width: 58%;
     vertical-align: middle;
     text-align: center;
-    padding-left: 12pt;
+}
+.ls-qr {
+    width: 118pt;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.ls-logo {
+    width: 100pt;
+    height: auto;
+    display: block;
+    margin: 0 auto;
 }
 
 /* ── PORTRAIT CARD ── */
@@ -78,11 +99,11 @@ body {
 <div class="ls-wrap">
     <div class="ls-inner">
         <div class="ls-left">
-            <img class="qr-img" src="data:image/png;base64,{{ $rawQrB64 }}" alt="QR-Code">
+            <img class="ls-qr" src="data:image/png;base64,{{ $rawQrB64 }}" alt="QR-Code">
         </div>
         <div class="ls-right">
             @if ($logoB64)
-                <img class="logo-img" src="data:image/png;base64,{{ $logoB64 }}" alt="memorybook">
+                <img class="ls-logo" src="data:image/png;base64,{{ $logoB64 }}" alt="memorybook">
             @endif
             <p class="domain-text">memorybook.at</p>
             <p class="code-text">{{ $code }}</p>
