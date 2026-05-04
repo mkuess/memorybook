@@ -109,12 +109,13 @@ class UserResource extends Resource
                         'gray'   => 'user',
                     ]),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Erstellt')
-                    ->dateTime('d.m.Y')
+                Tables\Columns\TextColumn::make('last_login_at')
+                    ->label('Zuletzt eingeloggt')
+                    ->dateTime('d.m.Y H:i')
+                    ->placeholder('Noch nie')
                     ->sortable(),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('last_login_at', 'desc')
             ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
