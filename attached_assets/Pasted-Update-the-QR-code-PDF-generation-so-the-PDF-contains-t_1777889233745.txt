@@ -1,0 +1,100 @@
+Update the QR code PDF generation so the PDF contains two printable layout variants: landscape and portrait.
+
+Reference:
+- I will upload a reference image showing both desired variants.
+- Use it only as visual guidance.
+- Do not embed the screenshot itself into the generated PDF.
+- Recreate the layout programmatically from the real QR code image, logo/symbol asset, domain text, and short code.
+
+Goal:
+The generated QR-code PDF should contain both variants on one page or on separate pages if that is easier and cleaner:
+1. Landscape / horizontal variant
+2. Portrait / vertical variant
+
+Content for both variants:
+- QR code image
+- memorybook logo/symbol
+- domain text:
+  memorybook.at
+- short code below it:
+  e.g. AYMVENML
+- use the actual short code from the QR code record
+- short code should be uppercase
+- keep the QR code scannable and not distorted
+- keep all images proportional
+- no cropping
+- no stretching
+
+Landscape variant:
+- rectangular horizontal layout
+- QR code on the left
+- logo/symbol on the right
+- text below/near the logo:
+  memorybook.at
+  SHORTCODE
+- rounded border around the whole layout
+- subtle border color matching the memorybook brand
+- enough white padding around the QR code for scan safety
+
+Portrait variant:
+- vertical layout
+- logo/symbol at the top
+- QR code centered below
+- text below the QR code:
+  memorybook.at
+  SHORTCODE
+- rounded border around the whole layout
+- subtle border color matching the memorybook brand
+- enough white padding around the QR code for scan safety
+
+PDF layout:
+- The PDF should include both variants.
+- Prefer A4 portrait page if simple:
+  - landscape variant near the top
+  - portrait variant below it
+- If sizing is difficult, use two pages:
+  - page 1: landscape variant
+  - page 2: portrait variant
+- Both variants must be centered and printable.
+- Do not add duplicate text outside the generated variants.
+- Do not add the old extra text block below the QR image.
+- Do not squeeze or distort the QR image or the full graphic.
+- Use proportional scaling only.
+
+Technical requirements:
+- Reuse existing QR code generation logic where possible.
+- Reuse existing memorybook symbol/logo asset.
+- If the symbol asset path is not available, use:
+  public/images/memorybook-symbol.png
+  or the existing logo asset currently used by QR generation.
+- Keep PNG download behavior unchanged unless it shares the same render helper.
+- If possible, create a shared renderer/helper that can generate:
+  - the base QR image
+  - the printable landscape layout
+  - the printable portrait layout
+  - the PDF containing both
+- Keep the implementation simple and production-compatible.
+- Do not rely on Replit-only paths.
+- Do not use browser screenshots to generate the PDF.
+
+Admin/customer:
+- PDF download from the QR-code page should download this new PDF with both variants.
+- Existing PNG download can stay as the single existing PNG layout unless already easy to add both.
+- Admin "View QR Code" download button should use the same PDF download behavior if applicable.
+
+Tests:
+- PDF download endpoint works
+- generated PDF contains both layout variants, or at least the generation logic includes both variants
+- QR code image is not distorted
+- short code appears uppercase in the generated output
+- memorybook.at appears in the generated output
+- no duplicate standalone text block is added outside the layout variants
+- existing QR public URL still works
+
+Run:
+- php artisan test
+- show changed files
+- explain briefly:
+  - where the PDF layout is generated
+  - how the two variants are arranged
+  - where the logo/symbol asset is loaded from

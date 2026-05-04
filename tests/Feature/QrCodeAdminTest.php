@@ -176,4 +176,79 @@ class QrCodeAdminTest extends TestCase
         $this->assertStringStartsWith("\x89PNG", $png);
         $this->assertGreaterThan(1000, strlen($png));
     }
+
+    // --- buildRawQrPng ---
+
+    public function test_build_raw_qr_png_returns_valid_png(): void
+    {
+        [, , $qr] = $this->makeUserWithPage();
+        $url = route('memory-pages.public', $qr->short_code);
+
+        $png = app(QrCodeImageService::class)->buildRawQrPng($url);
+
+        $this->assertStringStartsWith("\x89PNG", $png);
+        $this->assertGreaterThan(100, strlen($png));
+    }
+
+    // --- PDF download (two-card layout) ---
+
+    public function test_pdf_download_returns_pdf_content_type(): void
+    {
+        [$user, $page] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(
+            route('memory-pages.qr-code.download-pdf', $page)
+        );
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_pdf_download_contains_uppercase_code_in_filename(): void
+    {
+        [$user, $page, $qr] = $this->makeUserWithPage();
+
+        $response = $this->actingAs($user)->get(
+            route('memory-pages.qr-code.download-pdf', $page)
+        );
+
+        $response->assertOk();
+        $this->assertStringContainsString(
+            strtoupper($qr->short_code),
+            $response->headers->get('Content-Disposition')
+        );
+    }
+
+    public function test_pdf_template_contains_both_card_sections(): void
+    {
+        [, , $qr] = $this->makeUserWithPage();
+        $url = route('memory-pages.public', $qr->short_code);
+
+        $rawQrB64 = base64_encode(app(QrCodeImageService::class)->buildRawQrPng($url));
+        $logoPath = public_path('images/memorybook-logo.png');
+        $logoB64  = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
+        $code     = strtoupper($qr->short_code);
+
+        $html = view('memory-pages.qr-download-pdf', compact('rawQrB64', 'logoB64', 'code'))->render();
+
+        $this->assertStringContainsString('ls-wrap', $html);
+        $this->assertStringContainsString('pt-wrap', $html);
+        $this->assertStringContainsString('memorybook.at', $html);
+        $this->assertStringContainsString(strtoupper($qr->short_code), $html);
+    }
+
+    public function test_pdf_template_does_not_contain_standalone_extra_text_block(): void
+    {
+        [, , $qr] = $this->makeUserWithPage();
+        $url = route('memory-pages.public', $qr->short_code);
+
+        $rawQrB64 = base64_encode(app(QrCodeImageService::class)->buildRawQrPng($url));
+        $logoB64  = '';
+        $code     = strtoupper($qr->short_code);
+
+        $html = view('memory-pages.qr-download-pdf', compact('rawQrB64', 'logoB64', 'code'))->render();
+
+        // No standalone .domain / .code paragraph outside the card divs
+        $this->assertStringNotContainsString('memorybook.com', $html);
+    }
 }

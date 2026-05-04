@@ -45,6 +45,17 @@ class QrCodeImageService
     }
 
     /**
+     * Generate a plain QR-only PNG (no logo, no text) — used for PDF card layouts.
+     */
+    public function buildRawQrPng(string $url): string
+    {
+        $builder = new QrCodeBuilder(data: $url, size: 400, margin: 10);
+        $writer  = new PngWriter();
+
+        return $writer->write($builder)->getString();
+    }
+
+    /**
      * Build the full branded PNG in memory:
      *   [logo symbol]
      *   [QR code]

@@ -8,7 +8,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class MemoryPageQrController extends Controller
@@ -51,13 +50,12 @@ class MemoryPageQrController extends Controller
         $qr  = $memoryPage->qrCode;
         $url = route('memory-pages.public', $qr->short_code);
 
-        $this->qrImageService->ensureImageExists($qr, $url);
-        $qr->refresh();
+        $rawQrB64 = base64_encode($this->qrImageService->buildRawQrPng($url));
+        $logoPath = public_path('images/memorybook-logo.png');
+        $logoB64  = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
+        $code     = strtoupper($qr->short_code);
 
-        $qrB64 = base64_encode(Storage::disk('public')->get($qr->png_path));
-        $code  = strtoupper($qr->short_code);
-
-        $pdf = Pdf::loadView('memory-pages.qr-download-pdf', compact('qrB64', 'code'))
+        $pdf = Pdf::loadView('memory-pages.qr-download-pdf', compact('rawQrB64', 'logoB64', 'code'))
                   ->setPaper('A4', 'portrait');
 
         $filename = 'qrcode-' . $code . '.pdf';
