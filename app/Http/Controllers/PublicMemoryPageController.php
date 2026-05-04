@@ -9,7 +9,7 @@ class PublicMemoryPageController extends Controller
 {
     public function show(string $code): View
     {
-        $qr = QrCode::where('short_code', $code)->first();
+        $qr = QrCode::whereRaw('LOWER(short_code) = LOWER(?)', [$code])->first();
 
         if ($qr === null) {
             return view('memory-pages.unavailable');

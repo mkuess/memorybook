@@ -66,7 +66,7 @@ class VisitorMemoryController extends Controller
 
     public function thankYou(string $code): View
     {
-        $qr = QrCode::where('short_code', $code)->first();
+        $qr = QrCode::whereRaw('LOWER(short_code) = LOWER(?)', [$code])->first();
         abort_if(! $qr || ! $qr->memoryPage, 404);
 
         return view('visitor-memory.thankyou');
@@ -93,7 +93,7 @@ class VisitorMemoryController extends Controller
 
     private function resolveEligiblePage(string $code): MemoryPage
     {
-        $qr = QrCode::where('short_code', $code)->first();
+        $qr = QrCode::whereRaw('LOWER(short_code) = LOWER(?)', [$code])->first();
         abort_if(! $qr || ! $qr->memoryPage, 404);
 
         $page = $qr->memoryPage;

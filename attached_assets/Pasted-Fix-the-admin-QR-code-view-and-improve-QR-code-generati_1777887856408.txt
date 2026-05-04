@@ -1,0 +1,83 @@
+Fix the admin QR code view and improve QR code generation/rendering.
+
+Current issues:
+1. On the admin side, under "View QR Code", the QR code is currently not displayed.
+2. The generated QR code PNG should be redesigned.
+3. The admin should have a button to regenerate / refresh the QR code if something went wrong.
+
+Requirements
+
+1) Admin "View QR Code" page
+- On the admin page for viewing a QR code, the QR code image must be displayed correctly.
+- If a QR code image exists, show it visibly on the page.
+- If the image is missing or broken, show a clear fallback message.
+- Add a button labeled:
+  - "QR-Code neu generieren"
+- This button should:
+  - regenerate the QR code image for that record
+  - overwrite or replace the old generated image
+  - reload the page and show the new image
+  - show a success flash message like:
+    - "QR-Code wurde neu generiert."
+
+2) QR code PNG design
+The generated PNG file should have this layout:
+
+- clean white background
+- centered layout
+- at the top:
+  - show only the memorybook symbol (not the full wordmark)
+  - use the uploaded PNG/logo symbol as visual basis
+  - it should be visible, but not too dominant
+  - keep it smaller/subtle above the QR code
+- in the middle:
+  - the QR code itself, large and clearly scannable
+- below the QR code:
+  - first line: "memorybook.at/"
+  - second line: the QR code / short code / ID
+- The code line should be clearly readable and preferably uppercase.
+- If the system currently generates codes in lowercase, update the generation/storage/output so QR short codes are uppercase only.
+- Make sure the QR target URL still works correctly.
+
+3) QR code content / target
+- The QR code should continue to point to the correct public profile URL.
+- If uppercase codes are introduced, make routing and lookup robust so the code resolves correctly.
+
+4) Implementation expectations
+Please inspect the existing QR code flow:
+- model(s)
+- QR code generator service/helper
+- storage path
+- admin "View QR Code" page/infolist/view
+- customer QR code page if shared logic exists
+
+Fix the broken display instead of only masking it.
+
+5) Admin action
+- Add the regenerate action on the admin QR code detail/view page.
+- The action should only be available to admins.
+- Keep the rest of the page intact.
+
+6) Tests
+Add or update tests for:
+- admin QR code view displays the QR code image
+- regenerate action recreates the QR code file
+- regenerate action is admin-only
+- generated PNG includes:
+  - memorybook symbol at top
+  - "memorybook.at/" text
+  - code/ID on second line
+- code generation/output uses uppercase codes
+- QR code still resolves to the correct memory page URL
+
+Assets
+- Use the attached PNG logo as the symbol reference.
+- Only the symbol should appear in the QR image, not the full "memorybook" wordmark.
+
+Run after changes
+- php artisan test
+- show changed files
+- briefly explain:
+  - why the QR code was not shown before
+  - how regeneration works now
+  - where the PNG is stored

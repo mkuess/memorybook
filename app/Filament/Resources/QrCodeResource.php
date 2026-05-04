@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\QrCodeResource\Pages;
 use App\Models\QrCode;
 use Filament\Infolists;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -44,12 +45,20 @@ class QrCodeResource extends Resource
                 Infolists\Components\TextEntry::make('scan_count')
                     ->label('Aufrufe'),
 
+                ImageEntry::make('png_path')
+                    ->label('QR-Code')
+                    ->disk('public')
+                    ->height(300)
+                    ->width(300)
+                    ->visible(fn (QrCode $record): bool => (bool) $record->png_path),
+
+                Infolists\Components\TextEntry::make('png_path_missing')
+                    ->label('QR-Code')
+                    ->state('Kein Bild vorhanden. Bitte neu generieren.')
+                    ->visible(fn (QrCode $record): bool => ! $record->png_path),
+
                 Infolists\Components\TextEntry::make('png_path')
                     ->label('PNG-Pfad')
-                    ->placeholder('–'),
-
-                Infolists\Components\TextEntry::make('svg_path')
-                    ->label('SVG-Pfad')
                     ->placeholder('–'),
 
                 Infolists\Components\TextEntry::make('created_at')
