@@ -11,9 +11,12 @@ class Report extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'memory_page_id',
         'reporter_name',
         'reporter_email',
+        'subject',
+        'category',
         'reason',
         'description',
         'status',
@@ -21,8 +24,14 @@ class Report extends Model
     ];
 
     protected $attributes = [
-        'status' => 'open',
+        'status'   => 'open',
+        'category' => 'profile_report',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function memoryPage(): BelongsTo
     {

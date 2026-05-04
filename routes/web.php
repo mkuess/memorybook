@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminGalleryController;
+use App\Http\Controllers\SupportController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\MemoryPageController;
 use App\Http\Controllers\MemoryPageQrController;
@@ -79,6 +80,11 @@ Route::get('/admin-qr/{qrCode}/download', function (\App\Models\QrCode $qrCode) 
         'Content-Disposition' => 'attachment; filename="' . $filename . '"',
     ]);
 })->middleware('auth')->name('admin.qr-codes.download-png');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/support', [SupportController::class, 'create'])->name('support.create');
+    Route::post('/support', [SupportController::class, 'store'])->name('support.store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

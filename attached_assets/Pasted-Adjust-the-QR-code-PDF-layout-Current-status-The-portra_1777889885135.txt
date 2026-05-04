@@ -1,0 +1,49 @@
+Adjust the QR-code PDF layout.
+
+Current status:
+- The portrait / vertical variant is good and should stay close to the current implementation.
+- The landscape / horizontal variant is not correct yet:
+  - it is too wide
+  - there is too much empty white space
+  - the gap between the QR code and the text/logo block is too large
+
+Please refine the landscape variant only.
+
+Target for the landscape variant:
+- Make the overall card noticeably less wide.
+- Keep it as a horizontal card, but more compact.
+- Reduce the horizontal padding and reduce the empty space between the QR code and the branding/text block.
+- The QR code should remain on the left.
+- The logo + text block should remain on the right.
+- The right-side block should sit visually closer to the QR code.
+- Keep enough white margin around the QR code for scan safety, but do not waste space.
+- The layout should feel balanced and compact, more like a printable memorial label/card.
+
+Detailed layout guidance for the landscape version:
+- QR code occupies roughly the left 40–45% of the inner content area.
+- Right content block occupies roughly the remaining 55–60%.
+- The gap between QR code and right block should be small to medium, not large.
+- Center the right-side content vertically.
+- Keep the rounded border.
+- Keep the memorybook logo/symbol above the text.
+- Keep:
+  - memorybook.at
+  - SHORTCODE
+- SHORTCODE should remain uppercase and visually prominent.
+
+Important:
+- Do not distort or stretch the QR code.
+- Do not crop the QR code.
+- Scale proportionally only.
+- Keep the portrait variant as-is or very close to the current working version.
+- Only refine the landscape variant proportions and spacing.
+
+If helpful, extract the landscape card dimensions into dedicated layout constants so width, padding, QR size, and gap can be tuned more easily.
+
+After changes:
+- regenerate the PDF
+- verify both variants render correctly
+- verify no clipping occurs
+- verify the QR remains scannable
+- show changed files
+- briefly summarize the new landscape proportions

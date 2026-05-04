@@ -33,6 +33,14 @@ class ReportResource extends Resource
         'dismissed'  => 'Abgewiesen',
     ];
 
+    private static array $categoryLabels = [
+        'profile_report'       => 'Profilmeldung',
+        'Problem'              => 'Problem',
+        'Frage'                => 'Frage',
+        'Verbesserungsvorschlag' => 'Verbesserungsvorschlag',
+        'Sonstiges'            => 'Sonstiges',
+    ];
+
     private static function statusColor(string $state): string
     {
         return match ($state) {
@@ -41,6 +49,16 @@ class ReportResource extends Resource
             'resolved'  => 'success',
             'dismissed' => 'gray',
             default     => 'gray',
+        };
+    }
+
+    private static function categoryColor(string $state): string
+    {
+        return match ($state) {
+            'profile_report' => 'danger',
+            'Problem'        => 'warning',
+            'Frage'          => 'info',
+            default          => 'gray',
         };
     }
 
@@ -64,20 +82,11 @@ class ReportResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\TextEntry::make('memoryPage.person_name')
-                    ->label('Erinnerungsseite'),
-
-                Infolists\Components\TextEntry::make('reporter_name')
-                    ->label('Name des Melders')
-                    ->placeholder('–'),
-
-                Infolists\Components\TextEntry::make('reporter_email')
-                    ->label('E-Mail des Melders')
-                    ->placeholder('–'),
-
-                Infolists\Components\TextEntry::make('reason')
-                    ->label('Grund')
-                    ->placeholder('–'),
+                Infolists\Components\TextEntry::make('category')
+                    ->label('Typ')
+                    ->badge()
+                    ->color(fn (string $state): string => self::categoryColor($state))
+                    ->formatStateUsing(fn (string $state): string => self::$categoryLabels[$state] ?? $state),
 
                 Infolists\Components\TextEntry::make('status')
                     ->label('Status')
@@ -85,12 +94,33 @@ class ReportResource extends Resource
                     ->color(fn (string $state): string => self::statusColor($state))
                     ->formatStateUsing(fn (string $state): string => self::$statusOptions[$state] ?? $state),
 
+                Infolists\Components\TextEntry::make('reporter_name')
+                    ->label('Name')
+                    ->placeholder('–'),
+
+                Infolists\Components\TextEntry::make('reporter_email')
+                    ->label('E-Mail')
+                    ->placeholder('–'),
+
+                Infolists\Components\TextEntry::make('subject')
+                    ->label('Betreff')
+                    ->placeholder('–')
+                    ->columnSpanFull(),
+
+                Infolists\Components\TextEntry::make('memoryPage.person_name')
+                    ->label('Erinnerungsseite')
+                    ->placeholder('–'),
+
+                Infolists\Components\TextEntry::make('reason')
+                    ->label('Grund (Profilmeldung)')
+                    ->placeholder('–'),
+
                 Infolists\Components\TextEntry::make('created_at')
-                    ->label('Gemeldet am')
+                    ->label('Eingegangen am')
                     ->dateTime('d.m.Y H:i'),
 
                 Infolists\Components\TextEntry::make('description')
-                    ->label('Beschreibung')
+                    ->label('Nachricht')
                     ->placeholder('–')
                     ->columnSpanFull(),
 
@@ -105,20 +135,28 @@ class ReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('memoryPage.person_name')
-                    ->label('Erinnerungsseite')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('category')
+                    ->label('Typ')
+                    ->badge()
+                    ->color(fn (string $state): string => self::categoryColor($state))
+                    ->formatStateUsing(fn (string $state): string => self::$categoryLabels[$state] ?? $state)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('reporter_email')
-                    ->label('Melder')
+                    ->label('E-Mail')
                     ->searchable()
                     ->placeholder('–'),
 
-                Tables\Columns\TextColumn::make('reason')
-                    ->label('Grund')
+                Tables\Columns\TextColumn::make('subject')
+                    ->label('Betreff')
                     ->limit(40)
                     ->placeholder('–'),
+
+                Tables\Columns\TextColumn::make('memoryPage.person_name')
+                    ->label('Erinnerungsseite')
+                    ->placeholder('–')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
@@ -127,7 +165,7 @@ class ReportResource extends Resource
                     ->formatStateUsing(fn (string $state): string => self::$statusOptions[$state] ?? $state),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Gemeldet')
+                    ->label('Eingegangen')
                     ->dateTime('d.m.Y')
                     ->sortable(),
             ])
@@ -136,6 +174,10 @@ class ReportResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options(self::$statusOptions),
+
+                Tables\Filters\SelectFilter::make('category')
+                    ->label('Typ')
+                    ->options(self::$categoryLabels),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
