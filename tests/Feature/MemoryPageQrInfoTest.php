@@ -74,7 +74,7 @@ class MemoryPageQrInfoTest extends TestCase
         $response->assertSee("/m/{$code}");
     }
 
-    public function test_page_shows_memorybook_com_label(): void
+    public function test_page_shows_memorybook_at_link(): void
     {
         $owner = User::factory()->create();
         $page  = $this->makePage($owner);
@@ -82,10 +82,10 @@ class MemoryPageQrInfoTest extends TestCase
         $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
 
         $response->assertOk();
-        $response->assertSee('memorybook.com');
+        $response->assertSee('memorybook.at/');
     }
 
-    public function test_page_does_not_show_memorybook_at(): void
+    public function test_page_does_not_show_memorybook_com_as_separate_label(): void
     {
         $owner = User::factory()->create();
         $page  = $this->makePage($owner);
@@ -93,7 +93,7 @@ class MemoryPageQrInfoTest extends TestCase
         $response = $this->actingAs($owner)->get(route('memory-pages.qr-code', $page));
 
         $response->assertOk();
-        $response->assertDontSee('memorybook.at');
+        $response->assertDontSee('memorybook.com');
     }
 
     public function test_page_renders_qr_code_image_tag(): void

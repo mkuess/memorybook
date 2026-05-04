@@ -48,8 +48,7 @@ class QrCodeResource extends Resource
                 ImageEntry::make('png_path')
                     ->label('QR-Code')
                     ->disk('public')
-                    ->height(300)
-                    ->width(300)
+                    ->extraImgAttributes(['style' => 'max-width: 300px; width: 100%; height: auto;'])
                     ->visible(fn (QrCode $record): bool => (bool) $record->png_path),
 
                 Infolists\Components\TextEntry::make('png_path_missing')

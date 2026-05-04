@@ -24,14 +24,18 @@
                         <img
                             src="{{ Storage::disk('public')->url($qr->png_path) }}"
                             alt="QR-Code für {{ $memoryPage->person_name }}"
-                            class="w-64 h-64"
+                            style="max-width: 280px; width: 100%; height: auto;"
                         >
                     @endif
 
                     {{-- Label below QR --}}
-                    <div class="text-center leading-snug">
-                        <p class="text-sm font-medium text-[#706B62]">memorybook.com</p>
-                        <p class="text-lg font-bold tracking-widest text-[#2F2E2A]">{{ strtoupper($qr->short_code) }}</p>
+                    <div class="text-center">
+                        <a href="{{ route('memory-pages.public', $qr->short_code) }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="text-sm font-medium text-brand-600 hover:text-brand-700">
+                            memorybook.at/{{ strtoupper($qr->short_code) }}
+                        </a>
                     </div>
 
                     {{-- Download buttons --}}

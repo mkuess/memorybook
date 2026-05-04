@@ -15,6 +15,13 @@ class ViewQrCode extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('download')
+                ->label('QR-Code herunterladen')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->url(fn () => route('admin.qr-codes.download-png', $this->getRecord()))
+                ->openUrlInNewTab(false),
+
             Action::make('regenerate')
                 ->label('QR-Code neu generieren')
                 ->icon('heroicon-o-arrow-path')

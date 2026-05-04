@@ -63,6 +63,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/memory-pages/{memoryPage}/stories/{story}', [StoryController::class, 'update'])->name('memory-pages.stories.update');
 });
 
+Route::get('/admin-qr/{qrCode}/download', function (\App\Models\QrCode $qrCode) {
+    abort_if(! auth()->user()?->isAdmin(), 403);
+
+    $service = app(\App\Services\QrCodeImageService::class);
+    $url     = route('memory-pages.public', $qrCode->short_code);
+    $service->ensureImageExists($qrCode, $url);
+    $qrCode->refresh();
+
+    $bytes    = \Illuminate\Support\Facades\Storage::disk('public')->get($qrCode->png_path);
+    $filename = 'qrcode-' . strtoupper($qrCode->short_code) . '.png';
+
+    return response($bytes, 200, [
+        'Content-Type'        => 'image/png',
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+    ]);
+})->middleware('auth')->name('admin.qr-codes.download-png');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

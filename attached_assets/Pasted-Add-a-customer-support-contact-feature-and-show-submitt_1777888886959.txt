@@ -1,0 +1,120 @@
+Add a customer support/contact feature and show submitted messages in the admin reports area.
+
+Goal:
+- Customers should be able to contact support from the customer dashboard/menu.
+- They should be able to report problems, ask questions, or submit improvement suggestions.
+- Admins should see these messages in the existing admin "Meldungen" area or a clearly related section.
+
+Customer area:
+- Add a navigation/menu button labeled "Support"
+- Show it in the customer backend navigation/header where it fits best.
+- Link target:
+  /support
+  or /dashboard/support if that fits the current route structure better.
+
+Support page:
+- Create a customer support form page.
+- Page title: "Support"
+- Intro text:
+  "Schreib uns, wenn du ein Problem hast, Hilfe brauchst oder einen Verbesserungsvorschlag senden möchtest."
+- Fields:
+  - Anliegen type/select, required:
+    - Problem
+    - Frage
+    - Verbesserungsvorschlag
+    - Sonstiges
+  - Betreff, required
+  - Nachricht, required textarea
+- The logged-in user's name and email should be attached automatically.
+- Do not ask the customer to enter their email again unless necessary.
+- Optional: allow linking the support message to a memory page if simple:
+  - select "Erinnerungsseite" with the user's own memory pages
+  - optional field
+- Submit button:
+  "Nachricht senden"
+
+After submit:
+- store the support message
+- redirect back to the support page or dashboard
+- show success message:
+  "Deine Nachricht wurde gesendet."
+
+Data model:
+- Prefer reusing the existing Report/Meldung model/table if it fits.
+- If reusing Reports:
+  - add or use a field like type/category to distinguish:
+    - profile_report
+    - support
+  - status default: open
+  - store:
+    - user_id
+    - memory_page_id nullable
+    - reporter_name from authenticated user
+    - reporter_email from authenticated user
+    - subject
+    - message/description
+    - category/type
+    - status
+- If existing Report model is too specific for public profile reports, create a simple SupportMessage model/table instead.
+- But admin should still see it under "Meldungen" or a closely named admin resource.
+
+Admin area:
+- In Filament "Meldungen":
+  - show support messages as entries
+  - add a column "Typ" or "Kategorie"
+  - show values:
+    - Support
+    - Problem
+    - Frage
+    - Verbesserungsvorschlag
+    - Profilmeldung
+  - show customer/user email
+  - show subject
+  - show status
+  - show created_at
+- Admin can view details:
+  - name
+  - email
+  - linked memory page if present
+  - category/type
+  - subject
+  - message
+  - status
+  - timestamps
+- Admin can update status:
+  - open
+  - in_review
+  - resolved
+  - dismissed
+- Do not add delete action.
+
+Security:
+- only authenticated users can access customer support page
+- users can only link their own memory pages
+- normal users cannot access admin reports
+- admin can see all messages
+
+Do not change:
+- public profile reporting unless already integrated safely
+- checkout logic
+- QR code logic
+- memory page publishing logic
+- authentication logic
+
+Tests:
+- authenticated customer can access support page
+- guest cannot access support page
+- support form requires category/type
+- support form requires subject
+- support form requires message
+- submitting support message stores user_id
+- submitting support message stores reporter name/email from authenticated user
+- customer can optionally link own memory page
+- customer cannot link another user's memory page
+- admin can see support message in Meldungen/admin area
+- normal user cannot access admin Meldungen
+- admin can update support message status
+
+Run:
+- php artisan test
+- show changed files and test results

@@ -1,0 +1,92 @@
+Bitte fixe die QR-Code-Darstellung auf Kunden- und Adminseite sowie die PDF-Ausgabe.
+
+Aktuelle Probleme
+
+1) Kundenverwaltungsseite
+- Der QR-Code wird verzerrt angezeigt.
+- Unter dem QR-Code wird derzeit der Text getrennt ausgegeben:
+  - memorybook.com
+  - AYMVENML
+- Das soll anders formatiert werden.
+
+2) Adminseite „View QR Code“
+- Der QR-Code wird zwar angezeigt, aber nur in einem quadratischen Rahmen.
+- Dadurch werden oberer und unterer Bereich abgeschnitten.
+- Zusätzlich fehlt dort ein Download-Button.
+
+3) Generierte PDF-Datei
+- Die gesamte Grafik ist gequetscht / falsch skaliert.
+- Zusätzlich wird im PDF nochmals ein separater Textblock angezeigt mit:
+  - memorybook.com
+  - AYMVENML
+- Dieser Zusatztext soll entfernt werden, weil diese Information bereits im generierten QR-Bild eingebettet ist.
+
+Ziel / gewünschtes Verhalten
+
+1) Kundenverwaltungsseite korrigieren
+- Der QR-Code darf nicht verzerrt dargestellt werden.
+- Bitte die Darstellung so anpassen, dass das Bild immer mit korrektem Seitenverhältnis dargestellt wird.
+- Kein erzwungenes quadratisches Cropping.
+- Verwende sinngemäß eine Darstellung wie:
+  - natürliche Höhe/Breite respektieren
+  - contain statt cover
+  - keine feste Höhe+Breite, die das Bild zusammendrücken
+
+2) Text unter dem QR-Code auf Kunden-/QR-Seite neu formatieren
+- Statt
+  - memorybook.com
+  - AYMVENML
+- soll dort ein einziger Link ausgegeben werden:
+  - memorybook.com/AYMVENML
+- Dieser Link soll klickbar sein und auf die öffentliche Profilseite führen.
+- Bitte konsistent mit der tatsächlich verwendeten Domain arbeiten.
+  Wenn im Projekt bereits memorybook.at verwendet wird, dann entsprechend:
+  - memorybook.at/AYMVENML
+- Wichtig: nur eine sauber formatierte Zeile als Link.
+
+3) Adminseite „View QR Code“ korrigieren
+- Der QR-Code darf dort nicht mehr oben/unten abgeschnitten werden.
+- Der Bildcontainer soll sich an das tatsächliche Format des generierten QR-Bildes anpassen.
+- Das gesamte QR-Bild muss sichtbar sein.
+- Kein hartes quadratisches Cropping.
+- Füge auf dieser Seite zusätzlich einen Button hinzu:
+  - „QR-Code herunterladen“
+- Dieser Button soll die QR-Code-PNG herunterladen.
+
+4) PDF-Ausgabe korrigieren
+- Das in die PDF eingefügte QR-Bild darf nicht gequetscht oder verzerrt sein.
+- Das Bild soll proportional skaliert und sauber zentriert dargestellt werden.
+- Der zusätzliche separate Textblock unter/bei der Grafik mit:
+  - memorybook.com
+  - AYMVENML
+  soll komplett entfernt werden.
+- Denn:
+  - das QR-Bild selbst enthält bereits Logo + QR-Code + Text
+  - im PDF soll nur dieses fertige generierte Bild sauber platziert werden
+
+5) Technische Erwartung
+Bitte prüfe und korrigiere die relevanten Stellen im bestehenden Flow:
+- Kunden-QR-Code-Seite / Kundenverwaltungsseite
+- Admin „View QR Code“-Seite
+- QR-Code-PNG-Rendering
+- PDF-Export / PDF-Template / PDF-Generator
+- Bildgrößen / CSS-Klassen / Container / Inline-Styles / Dompdf-Skalierung
+
+6) Wichtige Detailregeln
+- Keine Verzerrung des QR-Bildes
+- Kein Beschnitt oben/unten
+- Kein doppelter Text in der PDF
+- Linkausgabe unter dem QR-Code nur noch als:
+  - memorybook.com/ID
+  oder
+  - memorybook.at/ID
+  je nachdem, was im Projekt konsistent verwendet wird
+
+7) Bitte nach Umsetzung
+- php artisan test
+- kurz sagen, welche Dateien geändert wurden
+- kurz erklären:
+  - warum der QR-Code bisher verzerrt / abgeschnitten war
+  - wie die Darstellung jetzt gelöst wurde
+  - wie der Download-Button funktioniert
+  - warum die PDF jetzt nicht mehr gequetscht ist
