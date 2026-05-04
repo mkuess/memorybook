@@ -104,6 +104,35 @@ class MemoryPage extends Model
         return $this->orders()->where('status', 'paid')->exists();
     }
 
+    public function onlineStatusReason(): ?string
+    {
+        if ($this->customer_removed_at !== null) {
+            return 'Vom Kunden entfernt';
+        }
+
+        if ($this->is_locked) {
+            return 'Durch Verwaltung gesperrt';
+        }
+
+        $hasPaidOrder = $this->relationLoaded('orders')
+            ? $this->orders->contains('status', 'paid')
+            : $this->orders()->where('status', 'paid')->exists();
+
+        if (! $hasPaidOrder) {
+            return 'Bestellung fehlt';
+        }
+
+        if (! $this->is_published) {
+            return 'Noch nicht aktiviert';
+        }
+
+        if ($this->visibility === 'private') {
+            return 'Privat';
+        }
+
+        return null;
+    }
+
     public function isOnline(): bool
     {
         $hasPaidOrder = $this->relationLoaded('orders')

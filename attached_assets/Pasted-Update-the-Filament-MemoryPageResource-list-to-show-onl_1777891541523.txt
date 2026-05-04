@@ -1,0 +1,65 @@
+Update the Filament MemoryPageResource list to show online status instead of the locked column.
+
+Current situation:
+- In the admin Erinnerungsseiten list, there is a column "Gesperrt".
+- This only shows the admin lock state.
+- We want the same overall online status display as on the customer dashboard.
+
+Requirements:
+- In Filament MemoryPageResource table:
+  - remove or hide the "Gesperrt" column
+  - add a column labeled "Status"
+- Status display should match the customer dashboard logic and wording.
+
+Online:
+- Show "Online" if all conditions are true:
+  - eligible paid/approved order or checkout entitlement exists
+  - is_published = true
+  - is_locked = false
+  - visibility is link or public
+  - customer_removed_at is null if that field exists
+
+Offline:
+- Show "Offline" otherwise.
+- Also show a small reason text if possible, same style/logic as customer dashboard:
+  - "Bestellung fehlt"
+  - "Nicht aktiviert"
+  - "Privat"
+  - "Durch Verwaltung gesperrt"
+  - "Vom Kunden entfernt"
+
+Admin-specific:
+- Keep the existing "Entfernt" column if useful, or keep it only if it adds value.
+- But the new Status column should already reflect "Vom Kunden entfernt".
+- Do not remove admin ability to see/edit removed pages.
+- Do not change public route behavior.
+- Do not change checkout/order logic.
+- Do not change customer dashboard.
+
+Implementation:
+- Prefer reusing the same helper/method used by the customer dashboard to avoid duplicated status logic.
+- If no helper exists yet, create a small method on MemoryPage model, for example:
+  - onlineStatusLabel()
+  - onlineStatusReason()
+  - isOnline()
+- Keep labels German.
+- Use simple badge styling similar to the customer dashboard:
+  - Online = positive/green
+  - Offline = neutral/warning
+  - reason as smaller muted text
+
+Tests:
+- admin memory page list shows "Status"
+- admin memory page list no longer shows "Gesperrt" as main column
+- online page shows "Online"
+- page without eligible order shows "Offline" and "Bestellung fehlt"
+- unpublished page shows "Offline" and "Nicht aktiviert"
+- private page shows "Offline" and "Privat"
+- locked page shows "Offline" and "Durch Verwaltung gesperrt"
+- customer-removed page shows "Offline" and "Vom Kunden entfernt"
+- admin can still see removed pages
+- admin can still edit pages
+
+Run:
+- php artisan test
+- show changed files and test results

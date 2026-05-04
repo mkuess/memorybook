@@ -243,9 +243,22 @@ class MemoryPageResource extends Resource
                     ->label('Freigegeben')
                     ->boolean(),
 
-                Tables\Columns\IconColumn::make('is_locked')
-                    ->label('Gesperrt')
-                    ->boolean(),
+                Tables\Columns\TextColumn::make('online_status')
+                    ->label('Status')
+                    ->html()
+                    ->state(function (MemoryPage $record): string {
+                        if ($record->isOnline()) {
+                            return '<span style="color:#6F7F68;font-weight:600">Online</span>';
+                        }
+                        $reason = $record->onlineStatusReason();
+                        $html   = '<span style="color:#706B62">Offline</span>';
+                        if ($reason) {
+                            $html .= '<br><span style="font-size:0.75rem;color:#9A6B5A">'
+                                . e($reason)
+                                . '</span>';
+                        }
+                        return $html;
+                    }),
 
                 Tables\Columns\IconColumn::make('customer_removed')
                     ->label('Entfernt')

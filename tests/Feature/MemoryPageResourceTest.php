@@ -26,6 +26,21 @@ class MemoryPageResourceTest extends TestCase
         ]);
     }
 
+    private function makePaidOrderFor(User $owner, MemoryPage $page): void
+    {
+        \App\Models\Order::create([
+            'user_id'             => $owner->id,
+            'memory_page_id'      => $page->id,
+            'package'             => 'basic',
+            'status'              => 'paid',
+            'billing_name'        => 'Max Mustermann',
+            'billing_email'       => $owner->email,
+            'billing_address'     => 'Testgasse 1',
+            'billing_postal_code' => '1010',
+            'billing_city'        => 'Wien',
+        ]);
+    }
+
     // --- list / access tests ---
 
     public function test_admin_can_access_memory_page_list(): void
@@ -549,5 +564,155 @@ class MemoryPageResourceTest extends TestCase
         $response = $this->actingAs($user)->get("/admin/memory-pages/{$page->id}");
 
         $response->assertForbidden();
+    }
+
+    // --- Status column tests ---
+
+    public function test_admin_memory_page_list_shows_status_column(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Status');
+    }
+
+    public function test_admin_memory_page_list_does_not_show_gesperrt_as_main_column(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        // "Gesperrt" as a table header must not appear (the detail view still uses it)
+        $html = $response->getContent();
+        // Column headers are rendered as <th> elements; we check the specific header label
+        $this->assertStringNotContainsString('<span>Gesperrt</span>', $html);
+    }
+
+    public function test_online_page_shows_online_in_status_column(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        // Give the page a paid order and make it fully online
+        $this->makePaidOrderFor($owner, $page);
+        $page->update([
+            'is_published' => true,
+            'is_locked'    => false,
+            'visibility'   => 'public',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Online');
+    }
+
+    public function test_page_without_paid_order_shows_offline_with_bestellung_fehlt(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->makeMemoryPage();
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertSee('Bestellung fehlt');
+    }
+
+    public function test_unpublished_page_with_paid_order_shows_offline_with_noch_nicht_aktiviert(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $this->makePaidOrderFor($owner, $page);
+        $page->update(['is_published' => false, 'visibility' => 'public']);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertSee('Noch nicht aktiviert');
+    }
+
+    public function test_private_page_with_paid_order_shows_offline_with_privat(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $this->makePaidOrderFor($owner, $page);
+        $page->update(['is_published' => true, 'visibility' => 'private']);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertSee('Privat');
+    }
+
+    public function test_locked_page_shows_offline_with_durch_verwaltung_gesperrt(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $page  = $this->makeMemoryPage($owner);
+
+        $this->makePaidOrderFor($owner, $page);
+        $page->update([
+            'is_published' => true,
+            'visibility'   => 'public',
+            'is_locked'    => true,
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertSee('Durch Verwaltung gesperrt');
+    }
+
+    public function test_customer_removed_page_shows_offline_with_vom_kunden_entfernt(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['customer_removed_at' => now()]);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee('Offline');
+        $response->assertSee('Vom Kunden entfernt');
+    }
+
+    public function test_admin_can_still_see_customer_removed_pages(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['customer_removed_at' => now()]);
+
+        $response = $this->actingAs($admin)->get('/admin/memory-pages');
+
+        $response->assertOk();
+        $response->assertSee($page->person_name);
+    }
+
+    public function test_admin_can_still_edit_customer_removed_pages(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page  = $this->makeMemoryPage();
+
+        $page->update(['customer_removed_at' => now()]);
+
+        $response = $this->actingAs($admin)->get("/admin/memory-pages/{$page->id}/edit");
+
+        $response->assertOk();
     }
 }
