@@ -12,20 +12,22 @@ body {
 }
 
 /* ── LANDSCAPE CARD ─────────────────────────────────────────────────────────
-   Layout constants:
-     card width  : 340pt  (compact, centered on A4)
-     card padding: 10pt vertical / 12pt horizontal
-     QR column   : 42% of inner width  ≈ 132pt → QR image 118pt
-     gap         : 8pt  (padding-right on left cell only)
-     right column: 58% of inner width
-     logo width  : 100pt
+   Layout constants
+     card width        : 320pt  (compact, centered on A4)
+     card padding      : 0pt    (padding lives inside the cells)
+     column width      : 50% = 160pt each
+     cell padding      : 12pt all sides
+     left inner width  : 160 - 24 = 136pt  → QR image = 136pt (fills safely)
+     right inner width : 160 - 24 = 136pt
+     logo width        : 100pt  (centered in 136pt inner)
+     card height       : driven by QR cell ≈ 136 + 24 = 160pt
    ────────────────────────────────────────────────────────────────────────── */
 .ls-wrap {
     border: 2pt solid #8FA7B0;
     border-radius: 12pt;
-    padding: 10pt 12pt;
-    width: 340pt;
+    width: 320pt;
     margin: 0 auto 28pt;
+    overflow: hidden;
 }
 .ls-inner {
     display: table;
@@ -33,18 +35,19 @@ body {
 }
 .ls-left {
     display: table-cell;
-    width: 42%;
+    width: 50%;
     vertical-align: middle;
-    padding-right: 8pt;
+    padding: 12pt;
 }
 .ls-right {
     display: table-cell;
-    width: 58%;
+    width: 50%;
     vertical-align: middle;
     text-align: center;
+    padding: 12pt;
 }
 .ls-qr {
-    width: 118pt;
+    width: 136pt;
     height: auto;
     display: block;
     margin: 0 auto;
