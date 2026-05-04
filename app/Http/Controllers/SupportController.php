@@ -11,7 +11,10 @@ class SupportController extends Controller
 {
     public function create(): View
     {
-        $memoryPages = auth()->user()->memoryPages()->orderBy('person_name')->get();
+        $memoryPages = auth()->user()->memoryPages()
+            ->whereNull('customer_removed_at')
+            ->orderBy('person_name')
+            ->get();
 
         return view('support.create', compact('memoryPages'));
     }
@@ -26,7 +29,10 @@ class SupportController extends Controller
                 'nullable',
                 'integer',
                 function (string $attribute, mixed $value, \Closure $fail): void {
-                    if ($value && ! auth()->user()->memoryPages()->where('id', $value)->exists()) {
+                    if ($value && ! auth()->user()->memoryPages()
+                        ->whereNull('customer_removed_at')
+                        ->where('id', $value)
+                        ->exists()) {
                         $fail('Diese Erinnerungsseite gehört nicht zu deinem Konto.');
                     }
                 },

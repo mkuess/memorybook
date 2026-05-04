@@ -26,6 +26,16 @@ class SupportTest extends TestCase
         ]);
     }
 
+    private function makeRemovedPageFor(User $user): MemoryPage
+    {
+        return MemoryPage::create([
+            'user_id'             => $user->id,
+            'slug'                => substr(md5(uniqid()), 0, 8),
+            'person_name'         => 'Entfernte Seite',
+            'customer_removed_at' => now(),
+        ]);
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
@@ -157,6 +167,69 @@ class SupportTest extends TestCase
             ->assertSessionHasErrors('memory_page_id');
 
         $this->assertDatabaseCount('reports', 0);
+    }
+
+    public function test_support_dropdown_shows_active_own_memory_pages(): void
+    {
+        $user = $this->makeUser();
+        $page = $this->makePageFor($user);
+
+        $response = $this->actingAs($user)->get(route('support.create'));
+
+        $response->assertOk();
+        $response->assertSee($page->person_name);
+    }
+
+    public function test_support_dropdown_hides_customer_removed_own_memory_pages(): void
+    {
+        $user    = $this->makeUser();
+        $removed = $this->makeRemovedPageFor($user);
+
+        $response = $this->actingAs($user)->get(route('support.create'));
+
+        $response->assertOk();
+        $response->assertDontSee($removed->person_name);
+    }
+
+    public function test_support_dropdown_hides_other_users_memory_pages(): void
+    {
+        $user  = $this->makeUser();
+        $other = $this->makeUser();
+        $page  = $this->makePageFor($other);
+
+        $response = $this->actingAs($user)->get(route('support.create'));
+
+        $response->assertOk();
+        $response->assertDontSee($page->person_name);
+    }
+
+    public function test_submitting_customer_removed_memory_page_id_is_rejected(): void
+    {
+        $user    = $this->makeUser();
+        $removed = $this->makeRemovedPageFor($user);
+
+        $this->actingAs($user)
+            ->post(route('support.store'), $this->validPayload([
+                'memory_page_id' => $removed->id,
+            ]))
+            ->assertSessionHasErrors('memory_page_id');
+
+        $this->assertDatabaseCount('reports', 0);
+    }
+
+    public function test_submitting_without_memory_page_id_still_works(): void
+    {
+        $user = $this->makeUser();
+
+        $this->actingAs($user)
+            ->post(route('support.store'), $this->validPayload())
+            ->assertRedirect(route('support.create'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('reports', [
+            'user_id'        => $user->id,
+            'memory_page_id' => null,
+        ]);
     }
 
     public function test_submitting_redirects_with_success_message(): void
