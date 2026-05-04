@@ -22,14 +22,18 @@ class SupportController extends Controller
             'category'       => ['required', 'in:Problem,Frage,Verbesserungsvorschlag,Sonstiges'],
             'subject'        => ['required', 'string', 'max:200'],
             'description'    => ['required', 'string', 'max:5000'],
-            'memory_page_id' => ['nullable', 'integer'],
+            'memory_page_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value && ! auth()->user()->memoryPages()->where('id', $value)->exists()) {
+                        $fail('Diese Erinnerungsseite gehört nicht zu deinem Konto.');
+                    }
+                },
+            ],
         ]);
 
-        $memoryPageId = null;
-        if (! empty($validated['memory_page_id'])) {
-            $page         = auth()->user()->memoryPages()->find($validated['memory_page_id']);
-            $memoryPageId = $page?->id;
-        }
+        $memoryPageId = ! empty($validated['memory_page_id']) ? (int) $validated['memory_page_id'] : null;
 
         Report::create([
             'user_id'        => auth()->id(),

@@ -1,0 +1,65 @@
+Fix the customer support form submission error and restrict memory page dropdown to the authenticated user's own pages.
+
+Current issues:
+1. Submitting the customer support form causes an error.
+2. The support form memory page dropdown currently shows all memory pages.
+3. It must only show memory pages owned by the currently authenticated user.
+
+Requirements:
+
+Customer support form:
+- Inspect the support form route, controller, request validation, model/table, and Blade view.
+- Fix the submit error.
+- Do not hide the error with a generic try/catch; fix the actual cause.
+- After successful submit, redirect back with:
+  "Deine Nachricht wurde gesendet."
+
+Memory page dropdown:
+- The optional memory page select must only include memory pages where:
+  memory_pages.user_id = auth()->id()
+- Do not show memory pages from other users.
+- If the user has no memory pages:
+  - either hide the dropdown
+  - or show an empty disabled option like "Keine Erinnerungsseite vorhanden"
+- Server-side validation must also enforce ownership:
+  - if memory_page_id is submitted, it must belong to the authenticated user
+  - submitting another user's memory_page_id must fail with 403 or validation error
+- Do not rely only on the dropdown filtering.
+
+Data storage:
+- Support message should store:
+  - user_id = authenticated user id
+  - reporter_name = authenticated user's name
+  - reporter_email = authenticated user's email
+  - memory_page_id nullable, only if owned by the user
+  - category/type
+  - subject
+  - message/description
+  - status default open
+- Do not expose admin-only fields to the customer.
+
+Admin:
+- Keep support messages visible in the admin "Meldungen" area.
+- Admin should still be able to see linked memory page if present.
+- Do not change admin permissions except as needed to keep tests passing.
+
+Security:
+- Guest users cannot access the support page.
+- Normal users cannot access admin Meldungen.
+- Users cannot create support messages linked to another user's memory page.
+
+Tests:
+- authenticated customer can submit support form successfully
+- support form stores user name and email from auth user
+- dropdown only shows the authenticated user's memory pages
+- dropdown does not show other users' memory pages
+- submitting another user's memory_page_id is rejected
+- submitting without memory_page_id still works
+- guest cannot access support form
+- admin can see submitted support message in Meldungen
+
+Debug:
+- Include the exact error cause in the response after fixing.
+- Show changed files.
+- Run:
+  php artisan test

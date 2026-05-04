@@ -1,0 +1,73 @@
+Refine the landscape QR-code PDF layout to use a strict 50/50 column layout.
+
+Current issue:
+- The portrait/vertical QR-code variant is acceptable.
+- The landscape/horizontal variant is still visually unbalanced.
+- The right information area has too much/too little inconsistent spacing.
+- The layout should be clearly split into two equal columns.
+
+Target:
+- Landscape card should use a strict 50/50 horizontal layout:
+  - left 50% = QR code area
+  - right 50% = logo + domain + short code information
+- Both columns should include internal padding so content does not stick to the border.
+
+Landscape layout requirements:
+- Keep the rounded rectangle border.
+- Inside the card:
+  - left column width: 50%
+  - right column width: 50%
+- Left column:
+  - contains QR code centered horizontally and vertically
+  - QR code must remain square
+  - QR code must not be stretched, cropped, or distorted
+  - keep enough quiet zone / white padding around QR code for scanning
+  - QR code should fill the left column as much as safely possible
+- Right column:
+  - contains memorybook logo/symbol
+  - below it: memorybook.at
+  - below that: SHORTCODE
+  - content should be centered horizontally and vertically within the right column
+  - short code remains uppercase and prominent
+- The gap between QR code and right-side content should come only from the two columns' internal padding, not from a large empty middle area.
+- Do not use arbitrary huge horizontal spacing.
+- Do not make the full card overly wide.
+- The landscape card should feel like a balanced two-column label.
+
+Suggested proportions:
+- card inner width = 100%
+- left column = 50%
+- right column = 50%
+- each column padding = consistent, e.g. 24–36 px depending on canvas size
+- QR code size should be based on available left column inner size:
+  qrSize = min(leftColumnInnerWidth, cardInnerHeight - verticalPadding)
+- right column content should be vertically centered as one group.
+
+Important:
+- Do not change the portrait/vertical variant unless necessary.
+- Do not distort the QR code.
+- Do not crop anything.
+- Do not add duplicate text outside the generated layouts.
+- Keep the PDF containing both variants.
+- The generated PDF must stay printable and clean.
+
+Implementation suggestion:
+- Create explicit constants for the landscape renderer:
+  - landscapeCardWidth
+  - landscapeCardHeight
+  - landscapePadding
+  - leftColumnX
+  - rightColumnX
+  - columnWidth = landscapeInnerWidth / 2
+  - qrSize
+- Draw debug-free final output only.
+- Avoid relying on CSS/flex if the PDF is image/canvas generated; calculate coordinates explicitly.
+
+After changes:
+- regenerate the PDF
+- verify the landscape card visually uses 50% QR area and 50% info area
+- verify QR code is scannable
+- verify portrait variant is still correct
+- run php artisan test
+- show changed files
+- briefly explain the final landscape layout math

@@ -150,14 +150,13 @@ class SupportTest extends TestCase
         $other = $this->makeUser();
         $page  = $this->makePageFor($other);
 
-        $this->actingAs($user)->post(route('support.store'), $this->validPayload([
-            'memory_page_id' => $page->id,
-        ]));
+        $this->actingAs($user)
+            ->post(route('support.store'), $this->validPayload([
+                'memory_page_id' => $page->id,
+            ]))
+            ->assertSessionHasErrors('memory_page_id');
 
-        $this->assertDatabaseHas('reports', [
-            'user_id'        => $user->id,
-            'memory_page_id' => null,
-        ]);
+        $this->assertDatabaseCount('reports', 0);
     }
 
     public function test_submitting_redirects_with_success_message(): void
